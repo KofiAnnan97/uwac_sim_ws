@@ -1,0 +1,79 @@
+################################
+# Seatrac USBL PLUGIN MESSAGES #
+################################
+
+bcn_frame_array.msg
+    bcn_frame[] frame
+bcn_frame.msg
+    string bid
+    string data
+bcn_pose_array.msg
+    bcn_pose[] pose
+bcn_pose.msg
+    string bid
+    float32 roll
+    float32 pitch
+    float32 yaw
+    float32 x
+    float32 y
+    float32 z
+bcn_remote_gps.msg
+    float32 heading
+    float32 lat
+    float32 long
+bcn_status_array.msg
+    bcn_status[] status
+bcn_status.msg
+    string bid
+    float32 supply_voltage
+    float32 temperature
+    float32 pressure
+    float32 vel_of_sound
+    float32 comp_acc_x
+    float32 comp_acc_y
+    float32 comp_acc_z
+    float32 comp_mag_x
+    float32 comp_mag_y
+    float32 comp_mag_z
+    float32 comp_gyro_x
+    float32 comp_gyro_y
+    float32 comp_gyro_z
+    int16 raw_acc_x
+    int16 raw_acc_y
+    int16 raw_acc_z
+    int16 raw_mag_x
+    int16 raw_mag_y
+    int16 raw_mag_z
+    int16 raw_gyro_x
+    int16 raw_gyro_y
+    int16 raw_gyro_z
+head.msg
+    float32 heading
+    float32 xacc
+    float32 yacc
+    float32 zacc
+    float32 roll
+    float32 pitch
+IverOSI.msg
+    int64 FYT
+    int64 FYB
+    int64 FPR
+    int64 FPL
+    int64 MS
+    int64 Mode
+    int64 NextWP
+    float64 latitude
+    float64 longitude
+    float64 speed
+    float64 distanceToNext
+    int64 error
+    float64 altitude
+    int64 parkTime
+    float64 magDeclination
+    float64 missionTime
+    float64 trueHeading
+    float64 depth
+    float64 battery
+loc.msg
+    float32 lat
+    float32 long

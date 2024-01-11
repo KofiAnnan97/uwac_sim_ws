@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Import macro files-->
+    <xacro:include filename="$(find uuv_descriptions)/urdf/common.urdf.xacro" />
+    <xacro:include filename="$(find dave_snippets)/urdf/sensor_snippets.xacro"/>
+    <xacro:include filename="$(find uuv_gazebo_ros_plugins)/urdf/snippets.xacro"/>
+
+    <!-- Properties -->
+    <xacro:property name="mass" value="0.85"/> 
+    <xacro:property name="radius" value="0.05"/>
+    <xacro:property name="length" value="0.3"/>
+    <xacro:property name="namespace" value="basic_beacon"/>
+
+
+    <!-- Robot Definition -->
+    <xacro:macro name="basic_beacon" params="namespace debug inertial_reference_frame">
+        <link name="${namespace}/base_link">
+            <visual name="visual">
+                <!--origin xyz="0 5 0" rpy="0 0 0"/-->
+                <geometry>
+                    <cylinder radius="${radius}" length="${length}"/>
+                </geometry>
+                <material name="orange">
+                    <color rgba="${255/255} ${108/255} ${10/255} 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <!--origin xyz="0 5 0" rpy="0 0 0"/-->
+                <geometry>
+                    <cylinder radius="${radius}" length="${length}"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="${mass}"/>
+                <origin xyz="0 1 0" rpy="0 0 0"/>
+                <inertia
+                    ixx="0.12" ixy="0.0" ixz="0.0"
+                    iyy="0.12" iyz="0.0"
+                    izz="0.11"/>
+            </inertial>
+        </link>
+
+        <gazebo reference="link">                           
+            <material>Gazebo/Orange</material>
+        </gazebo>
+        
+        <!-- Set up USBL Plugin for TX and RX -->
+        <gazebo>
+            <plugin name="${namespace}_tx" filename="libtransceiverPlugin.so">
+                <namespace>USBL Transciever</namespace>
+                <transponder_device>trasnponder_manufacturer</transponder_device>
+                <transponder_ID>1</transponder_ID>
+                <transceiver_device>tranceiver_manufacturer</transceiver_device>
+                <transceiver_ID>168</transceiver_ID>
+                <enable_ping_scheduler>0</enable_ping_scheduler>
+                <transponder_attached_object>sphere</transponder_attached_object>
+                <interrogation_mode>common</interrogation_mode>
+                <sound_speed>1540.0</sound_speed>
+                <ping_freq>2</ping_freq>
+            </plugin>
+            <plugin name='${namespace}_rx' filename='libtransponderPlugin.so'>
+                <namespace>USBL Transponder</namespace>
+                <transponder_device>trasnponder_manufacturer</transponder_device>
+                <transponder_ID>1</transponder_ID>
+                <transceiver_device>tranceiver_manufacturer</transceiver_device>
+                <transceiver_ID>168</transceiver_ID>
+                <sound_speed>1540.0</sound_speed>
+                <mu>0</mu>
+                <sigma>0.0</sigma>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+</robot>

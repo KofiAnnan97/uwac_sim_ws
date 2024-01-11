@@ -1,0 +1,1964 @@
+<?xml version='1.0'?>
+<sdf version='1.7'>
+  <model name='glider_hybrid_whoi'>
+    <link name='glider_hybrid_whoi/base_link'>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>71.855</mass>
+        <inertia>
+          <ixx>0.433608</ixx>
+          <ixy>-5.73972e-42</ixy>
+          <ixz>1.29247e-26</ixz>
+          <iyy>14.1048</iyy>
+          <iyz>-7.01222e-18</iyz>
+          <izz>14.0762</izz>
+        </inertia>
+      </inertial>
+      <sensor name='dvl_sensor' type='dsros_dvl'>
+        <always_on>1</always_on>
+        <update_rate>7</update_rate>
+        <plugin name='dvl_sensor_controller' filename='libdsros_ros_dvl.so'>
+          <robotNamespace>dvl</robotNamespace>
+          <topicName>dvl</topicName>
+          <rangesTopicName>ranges</rangesTopicName>
+          <frameName>dvl_link</frameName>
+          <pointcloudFrame>glider_hybrid_whoi/base_link</pointcloudFrame>
+          <updateRateHZ>7.0</updateRateHZ>
+          <gaussianNoiseBeamVel>0.005</gaussianNoiseBeamVel>
+          <gaussianNoiseBeamWtrVel>0.0075</gaussianNoiseBeamWtrVel>
+          <gaussianNoiseBeamRange>0.1</gaussianNoiseBeamRange>
+          <minRange>0.7</minRange>
+          <maxRange>90.0</maxRange>
+          <maxRangeDiff>10</maxRangeDiff>
+          <beamAngleDeg>30.0</beamAngleDeg>
+          <beamWidthDeg>4.0</beamWidthDeg>
+          <beamAzimuthDeg1>-135</beamAzimuthDeg1>
+          <beamAzimuthDeg2>135</beamAzimuthDeg2>
+          <beamAzimuthDeg3>45</beamAzimuthDeg3>
+          <beamAzimuthDeg4>-45</beamAzimuthDeg4>
+          <enableWaterTrack>1</enableWaterTrack>
+          <waterTrackBins>10</waterTrackBins>
+          <currentProfileCoordMode>0</currentProfileCoordMode>
+          <pos_z_down>1</pos_z_down>
+          <collide_bitmask>0x0001</collide_bitmask>
+        </plugin>
+        <pose>0 0 0 3.14159 -0 0</pose>
+      </sensor>
+      <sensor name='dvl_sonar_ray_1' type='ray'>
+        <update_rate>7</update_rate>
+        <visualize>1</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.7</min>
+            <max>90</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <pose>0 0 0 0 1.0508 0</pose>
+      </sensor>
+      <sensor name='dvl_sonar_ray_2' type='ray'>
+        <update_rate>7</update_rate>
+        <visualize>1</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.7</min>
+            <max>90</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <pose>0 0 0 3.14159 1.0508 3.14159</pose>
+      </sensor>
+      <sensor name='dvl_sonar_ray_3' type='ray'>
+        <update_rate>7</update_rate>
+        <visualize>1</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.7</min>
+            <max>90</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <pose>0 0 0 0 1.0508 1.5708</pose>
+      </sensor>
+      <sensor name='dvl_sonar_ray_4' type='ray'>
+        <update_rate>7</update_rate>
+        <visualize>1</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.7</min>
+            <max>90</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <pose>0 0 0 0 1.0508 -1.5708</pose>
+      </sensor>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <pose>0 0 0 0 -0 0</pose>
+      <visual name='glider_hybrid_whoi/base_link_fixed_joint_lump__dvl_link_visual_1'>
+        <pose>0 0 0 3.14159 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.25 0.25 0.25</scale>
+            <uri>/home/ekg_unix/GitHub/research/simulation/uuv_ws/src/nps_uw_sensors_gazebo/models/whoi_teledyne_whn/meshes/WorkhorseNavigator.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <visual name='glider_hybrid_whoi/base_link_visual'>
+        <pose>0 0 0 0 0 -1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file:///home/ekg_unix/GitHub/research/simulation/uuv_ws/src/glider_hybrid_whoi/glider_hybrid_whoi_description/mesh/glider_hybrid_whoi/glider_hybrid_whoi_body.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <visual name='glider_hybrid_whoi/base_link_fixed_joint_lump__hector_imu_visual_2'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.057 0.041 0.024</size>
+          </box>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='glider_hybrid_whoi/base_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 0 -1.5708</pose>
+        <geometry>
+          <mesh>
+            <uri>/home/ekg_unix/GitHub/research/simulation/uuv_ws/src/glider_hybrid_whoi/glider_hybrid_whoi_description/mesh/glider_hybrid_whoi/glider_hybrid_whoi_collision.dae</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+      <collision name='glider_hybrid_whoi/base_link_fixed_joint_lump__dvl_link_collision_1'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1126</radius>
+            <length>0.2445</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+      <collision name='glider_hybrid_whoi/base_link_fixed_joint_lump__hector_imu_collision_2'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.057 0.041 0.024</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/battery_link'>
+      <pose>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <battery name='glider_hybrid_whoi/battery'>
+        <voltage>4.2</voltage>
+      </battery>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+    </link>
+    <link name='glider_hybrid_whoi/camera_link'>
+      <pose>0.3 -0 -0.050002 0 0.3 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.015</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <sensor name='camera' type='camera'>
+        <update_rate>30</update_rate>
+        <camera name='camera'>
+          <horizontal_fov>1.8125</horizontal_fov>
+          <image>
+            <width>768</width>
+            <height>492</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>3000</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.02</stddev>
+          </noise>
+        </camera>
+        <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+          <updateRate>30</updateRate>
+          <cameraName>glider_hybrid_whoi/camera</cameraName>
+          <frameName>camera_link_optical</frameName>
+          <attenuationR>0.0</attenuationR>
+          <attenuationG>0.0</attenuationG>
+          <attenuationB>0.0</attenuationB>
+          <backgroundR>0</backgroundR>
+          <backgroundG>0</backgroundG>
+          <backgroundB>0</backgroundB>
+          <imageTopicName>camera_image</imageTopicName>
+          <pointCloudTopicName>camera_cloud</pointCloudTopicName>
+          <depthImageTopicName>camera_depth</depthImageTopicName>
+          <depthImageCameraInfoTopicName>camera_depth_info</depthImageCameraInfoTopicName>
+          <pointCloudCutoff>10.0</pointCloudCutoff>
+          <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <visual name='glider_hybrid_whoi/camera_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.5 0.5 0.5</scale>
+            <uri>file:///home/ekg_unix/GitHub/research/simulation/uuv_ws/src/uuv_simulator/uuv_sensor_plugins/uuv_sensor_ros_plugins/meshes/oe14-372.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='glider_hybrid_whoi/camera_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/camera_link_optical'>
+      <pose>0.3 -0 -0.050002 -1.8708 -1e-06 -1.5708</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.66667e-12</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.66667e-12</iyy>
+          <iyz>0</iyz>
+          <izz>1.66667e-12</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <collision name='glider_hybrid_whoi/camera_link_optical_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/dvl_link'>
+      <pose>-0 -0 -0.082497 0 1.11701 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.7e-08</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.7e-08</iyy>
+          <iyz>0</iyz>
+          <izz>1.7e-08</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <visual name='glider_hybrid_whoi/dvl_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.62 0.62 0.62</scale>
+            <uri>file:///home/ekg_unix/GitHub/research/simulation/uuv_ws/src/uuv_simulator/uuv_sensor_plugins/uuv_sensor_ros_plugins/meshes/dvl.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='glider_hybrid_whoi/dvl_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/dvl_sonar0_link'>
+      <pose>-0 -0 -0.082497 0 0.59701 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.7e-08</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.7e-08</iyy>
+          <iyz>0</iyz>
+          <izz>1.7e-08</izz>
+        </inertia>
+      </inertial>
+      <sensor name='dvl_sonar0' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <update_rate>0.25</update_rate>
+        <visualize>0</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.55</min>
+            <max>81</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name='dvl_sonar0' filename='libgazebo_ros_range.so'>
+          <gaussianNoise>0.005</gaussianNoise>
+          <alwaysOn>1</alwaysOn>
+          <updateRate>0.25</updateRate>
+          <topicName>altimeter_sonar0</topicName>
+          <frameName>glider_hybrid_whoi/dvl_sonar0_link</frameName>
+          <fov>0.06</fov>
+          <radiation>ultrasound</radiation>
+          <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <collision name='glider_hybrid_whoi/dvl_sonar0_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/dvl_sonar1_link'>
+      <pose>-0 -0 -0.082497 0.794687 0.894651 0.917365</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.7e-08</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.7e-08</iyy>
+          <iyz>0</iyz>
+          <izz>1.7e-08</izz>
+        </inertia>
+      </inertial>
+      <sensor name='dvl_sonar1' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <update_rate>0.25</update_rate>
+        <visualize>0</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.55</min>
+            <max>81</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name='dvl_sonar1' filename='libgazebo_ros_range.so'>
+          <gaussianNoise>0.005</gaussianNoise>
+          <alwaysOn>1</alwaysOn>
+          <updateRate>0.25</updateRate>
+          <topicName>altimeter_sonar1</topicName>
+          <frameName>glider_hybrid_whoi/dvl_sonar1_link</frameName>
+          <fov>0.06</fov>
+          <radiation>ultrasound</radiation>
+          <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <collision name='glider_hybrid_whoi/dvl_sonar1_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/dvl_sonar2_link'>
+      <pose>-0 -0 -0.082497 3.14159 1.50458 3.14159</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.7e-08</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.7e-08</iyy>
+          <iyz>0</iyz>
+          <izz>1.7e-08</izz>
+        </inertia>
+      </inertial>
+      <sensor name='dvl_sonar2' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <update_rate>0.25</update_rate>
+        <visualize>0</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.55</min>
+            <max>81</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name='dvl_sonar2' filename='libgazebo_ros_range.so'>
+          <gaussianNoise>0.005</gaussianNoise>
+          <alwaysOn>1</alwaysOn>
+          <updateRate>0.25</updateRate>
+          <topicName>altimeter_sonar2</topicName>
+          <frameName>glider_hybrid_whoi/dvl_sonar2_link</frameName>
+          <fov>0.06</fov>
+          <radiation>ultrasound</radiation>
+          <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <collision name='glider_hybrid_whoi/dvl_sonar2_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/dvl_sonar3_link'>
+      <pose>-0 -0 -0.082497 -0.794687 0.894651 -0.917365</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.7e-08</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.7e-08</iyy>
+          <iyz>0</iyz>
+          <izz>1.7e-08</izz>
+        </inertia>
+      </inertial>
+      <sensor name='dvl_sonar3' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <update_rate>0.25</update_rate>
+        <visualize>0</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>3</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.03</min_angle>
+              <max_angle>0.03</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.55</min>
+            <max>81</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name='dvl_sonar3' filename='libgazebo_ros_range.so'>
+          <gaussianNoise>0.005</gaussianNoise>
+          <alwaysOn>1</alwaysOn>
+          <updateRate>0.25</updateRate>
+          <topicName>altimeter_sonar3</topicName>
+          <frameName>glider_hybrid_whoi/dvl_sonar3_link</frameName>
+          <fov>0.06</fov>
+          <radiation>ultrasound</radiation>
+          <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <collision name='glider_hybrid_whoi/dvl_sonar3_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/pose_sensor_link_default'>
+      <pose>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+    </link>
+    <link name='glider_hybrid_whoi/pressure_link'>
+      <pose>0 0 0 0 1.11701 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.015</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <visual name='glider_hybrid_whoi/pressure_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file:///home/ekg_unix/GitHub/research/simulation/uuv_ws/src/uuv_simulator/uuv_sensor_plugins/uuv_sensor_ros_plugins/meshes/pressure.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='glider_hybrid_whoi/pressure_link_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 3.14159 1.57079 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/thruster_0'>
+      <pose>-0.558 0.05 -1e-06 0 0 -2.92168</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>1e-05</mass>
+        <inertia>
+          <ixx>0</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0</iyy>
+          <iyz>0</iyz>
+          <izz>0</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <visual name='glider_hybrid_whoi/thruster_0_visual'>
+        <pose>-0.541 0.12 0 0 -0 1.44513</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file:///home/ekg_unix/GitHub/research/simulation/uuv_ws/src/glider_hybrid_whoi/glider_hybrid_whoi_description/mesh/glider_hybrid_whoi/glider_hybrid_whoi_left_propeller.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='glider_hybrid_whoi/thruster_0_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='glider_hybrid_whoi/thruster_1'>
+      <pose>-0.558 -0.05 3e-06 0 0 -0.219911</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>1e-05</mass>
+        <inertia>
+          <ixx>0</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0</iyy>
+          <iyz>0</iyz>
+          <izz>0</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <visual name='glider_hybrid_whoi/thruster_1_visual'>
+        <pose>0.541 0.12 0 0 0 -1.44513</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>file:///home/ekg_unix/GitHub/research/simulation/uuv_ws/src/glider_hybrid_whoi/glider_hybrid_whoi_description/mesh/glider_hybrid_whoi/glider_hybrid_whoi_right_propeller.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <shader type='pixel'/>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='glider_hybrid_whoi/thruster_1_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>1e-06</radius>
+            <length>1e-06</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <joint name='glider_hybrid_whoi/battery_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/battery_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/camera_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/camera_link</child>
+      <pose>0 0 -0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/camera_optical_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/camera_link</parent>
+      <child>glider_hybrid_whoi/camera_link_optical</child>
+      <pose>0 0 -0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/dvl_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/dvl_link</child>
+      <pose>0 0 -0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/dvl_sonar0_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/dvl_link</parent>
+      <child>glider_hybrid_whoi/dvl_sonar0_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/dvl_sonar1_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/dvl_link</parent>
+      <child>glider_hybrid_whoi/dvl_sonar1_link</child>
+      <pose>0 -0 0 -0 -0 -0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/dvl_sonar2_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/dvl_link</parent>
+      <child>glider_hybrid_whoi/dvl_sonar2_link</child>
+      <pose>0 0 -0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/dvl_sonar3_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/dvl_link</parent>
+      <child>glider_hybrid_whoi/dvl_sonar3_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/pose_sensor_default_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/pose_sensor_link_default</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/pressure_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/pressure_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/thruster_0_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/thruster_0</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='glider_hybrid_whoi/thruster_1_joint' type='revolute'>
+      <parent>glider_hybrid_whoi/base_link</parent>
+      <child>glider_hybrid_whoi/thruster_1</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <static>0</static>
+    <allow_auto_disable>1</allow_auto_disable>
+    <plugin name='gazebo_ros_control' filename='libgazebo_ros_control.so'>
+      <robotNamespace>/glider_hybrid_whoi</robotNamespace>
+      <robotParam>/glider_hybrid_whoi/robot_description</robotParam>
+      <bathymetry>
+        <interval_s>1.0</interval_s>
+      </bathymetry>
+    </plugin>
+    <plugin name='glider_hybrid_whoi/imu_link_battery_consumer' filename='libcustom_battery_consumer_ros_plugin.so'>
+      <link_name>glider_hybrid_whoi/battery_link</link_name>
+      <battery_name>glider_hybrid_whoi/battery</battery_name>
+      <power_load>20</power_load>
+      <topic_device_state>glider_hybrid_whoi/imu/state</topic_device_state>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='glider_hybrid_whoi_0_thruster_model' filename='libuuv_thruster_ros_plugin.so'>
+      <linkName>glider_hybrid_whoi/thruster_0</linkName>
+      <jointName>glider_hybrid_whoi/thruster_0_joint</jointName>
+      <thrusterID>0</thrusterID>
+      <dynamics>
+        <type>FirstOrder</type>
+        <timeConstant>0.0</timeConstant>
+      </dynamics>
+      <conversion>
+        <type>Basic</type>
+        <rotorConstant>0.0</rotorConstant>
+      </conversion>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='glider_hybrid_whoi_1_thruster_model' filename='libuuv_thruster_ros_plugin.so'>
+      <linkName>glider_hybrid_whoi/thruster_1</linkName>
+      <jointName>glider_hybrid_whoi/thruster_1_joint</jointName>
+      <thrusterID>1</thrusterID>
+      <dynamics>
+        <type>FirstOrder</type>
+        <timeConstant>0.0</timeConstant>
+      </dynamics>
+      <conversion>
+        <type>Basic</type>
+        <rotorConstant>0.0</rotorConstant>
+      </conversion>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='glider_hybrid_whoi_kinematics_plugin' filename='libkinematics_ros_plugin.so'>
+      <fluid_deisnty>1024.0</fluid_deisnty>
+      <writeLog>1</writeLog>
+      <flow_velocity_topic>/hydrodynamics/current_velocity/glider_hybrid_whoi</flow_velocity_topic>
+      <use_global_ocean_current>1</use_global_ocean_current>
+      <f_pitch_battpos_cal_m>1.2565</f_pitch_battpos_cal_m>
+      <f_pitch_battpos_cal_b>-0.055</f_pitch_battpos_cal_b>
+      <Area>0.345</Area>
+      <C_D>0.2534</C_D>
+      <C_L>0.4160</C_L>
+      <f_thruster_voltage_v1>1.8953</f_thruster_voltage_v1>
+      <f_thruster_voltage_v2>-1.995</f_thruster_voltage_v2>
+      <f_thruster_voltage_v3>1.8701</f_thruster_voltage_v3>
+      <f_thruster_power_w1>-0.020919</f_thruster_power_w1>
+      <f_thruster_power_w2>1.4699</f_thruster_power_w2>
+      <f_thruster_power_w3>0.97895</f_thruster_power_w3>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='glider_hybrid_whoi_linear_battery_ros_plugin' filename='liblinear_battery_ros_plugin.so'>
+      <namespace>glider_hybrid_whoi</namespace>
+      <link_name>glider_hybrid_whoi/battery_link</link_name>
+      <battery_name>glider_hybrid_whoi/battery</battery_name>
+      <open_circuit_voltage_constant_coef>3.7</open_circuit_voltage_constant_coef>
+      <open_circuit_voltage_linear_coef>-3.1424</open_circuit_voltage_linear_coef>
+      <initial_charge>1.1665</initial_charge>
+      <capacity>0.5</capacity>
+      <resistance>0.002</resistance>
+      <smooth_current_tau>1.9499</smooth_current_tau>
+      <update_rate>2.0</update_rate>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='hector_gps_sim' filename='libuw_gps_ros_plugin.so'>
+      <alwaysOn>1</alwaysOn>
+      <updateRate>0.25</updateRate>
+      <bodyName>glider_hybrid_whoi/base_link</bodyName>
+      <topicName>hector_gps</topicName>
+      <velocityTopicName>hector_gps_velocity</velocityTopicName>
+      <drift>0.0 0.0 0.0</drift>
+      <gaussianNoise>0.0 0.0 0.0</gaussianNoise>
+      <velocityDrift>0 0 0</velocityDrift>
+      <velocityGaussianNoise>0.0 0.0 0.0</velocityGaussianNoise>
+      <signal_delay>10</signal_delay>
+      <signal_max_depth>2</signal_max_depth>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='imu_controller' filename='libuw_imu_ros_plugin.so'>
+      <alwaysOn>1</alwaysOn>
+      <updateRate>10</updateRate>
+      <bodyName>glider_hybrid_whoi/base_link</bodyName>
+      <topicName>hector_imu</topicName>
+      <robotNamespace>glider_hybrid_whoi</robotNamespace>
+      <serviceName>hector_imu/is_calibrated</serviceName>
+      <gaussianNoise>0.00000001</gaussianNoise>
+      <xyzOffset>0</xyzOffset>
+      <xyzOffset>0</xyzOffset>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+      <frameId>world</frameId>
+    </plugin>
+    <plugin name='libuuv_gazebo_dvl_plugin' filename='libuuv_gazebo_ros_dvl_plugin.so'>
+      <robot_namespace>glider_hybrid_whoi</robot_namespace>
+      <link_name>glider_hybrid_whoi/dvl_link</link_name>
+      <sensor_topic>altimeter</sensor_topic>
+      <update_rate>0.25</update_rate>
+      <noise_sigma>0</noise_sigma>
+      <noise_amplitude>0</noise_amplitude>
+      <enable_gazebo_messages>0</enable_gazebo_messages>
+      <enable_local_ned_frame>0</enable_local_ned_frame>
+      <static_reference_frame>world</static_reference_frame>
+      <beam_link_name_0>glider_hybrid_whoi/dvl_sonar0_link</beam_link_name_0>
+      <beam_link_name_1>glider_hybrid_whoi/dvl_sonar1_link</beam_link_name_1>
+      <beam_link_name_2>glider_hybrid_whoi/dvl_sonar2_link</beam_link_name_2>
+      <beam_link_name_3>glider_hybrid_whoi/dvl_sonar3_link</beam_link_name_3>
+      <beam_topic_0>altimeter_sonar0</beam_topic_0>
+      <beam_topic_1>altimeter_sonar1</beam_topic_1>
+      <beam_topic_2>altimeter_sonar2</beam_topic_2>
+      <beam_topic_3>altimeter_sonar3</beam_topic_3>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='libuuv_gazebo_subseapressure_plugin' filename='libuuv_gazebo_ros_subsea_pressure_plugin.so'>
+      <robot_namespace>glider_hybrid_whoi</robot_namespace>
+      <link_name>glider_hybrid_whoi/pressure_link</link_name>
+      <sensor_topic>pressure</sensor_topic>
+      <update_rate>10</update_rate>
+      <saturation>1362</saturation>
+      <noise_sigma>3.0</noise_sigma>
+      <noise_amplitude>0.0</noise_amplitude>
+      <estimate_depth_on>1</estimate_depth_on>
+      <standard_pressure>101.325</standard_pressure>
+      <kPa_per_meter>9.80638</kPa_per_meter>
+      <enable_gazebo_messages>0</enable_gazebo_messages>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='pose_3d_plugin' filename='libuuv_gazebo_ros_pose_gt_plugin.so'>
+      <robot_namespace>glider_hybrid_whoi</robot_namespace>
+      <link_name>glider_hybrid_whoi/base_link</link_name>
+      <sensor_topic>pose_gt</sensor_topic>
+      <static_reference_frame>world_ned</static_reference_frame>
+      <noise_sigma>0.0</noise_sigma>
+      <noise_amplitude>0.0</noise_amplitude>
+      <update_rate>20</update_rate>
+      <enable_gazebo_messages>0</enable_gazebo_messages>
+      <publish_ned_odom>1</publish_ned_odom>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+    <plugin name='usbl_transponder' filename='libtransponderPlugin.so'>
+      <plugin name='usbl_transponder' filename='libtransponderPlugin.so'>
+        <namespace>USBL</namespace>
+        <transponder_device>trasnponder_manufacturer</transponder_device>
+        <transponder_ID>1</transponder_ID>
+        <transceiver_device>tranceiver_manufacturer</transceiver_device>
+        <transceiver_ID>168</transceiver_ID>
+        <mu>0</mu>
+        <sigma>0.0</sigma>
+      </plugin>
+    </plugin>
+    <plugin name='uuv_joint_state_publisher' filename='libuuv_joint_state_publisher.so'>
+      <robotNamespace>glider_hybrid_whoi</robotNamespace>
+      <updateRate>50</updateRate>
+    </plugin>
+    <plugin name='{namespace}_dave_ocean_current_plugin' filename='libdave_ocean_current_model_plugin.so'>
+      <flow_velocity_topic>hydrodynamics/current_velocity/glider_hybrid_whoi</flow_velocity_topic>
+      <base_link_name>glider_hybrid_whoi/base_link</base_link_name>
+      <transient_current>
+        <topic_stratified_database>stratified_current_velocity_database</topic_stratified_database>
+        <velocity_north>
+          <noiseAmp>0.3</noiseAmp>
+          <noiseFreq>0.0</noiseFreq>
+        </velocity_north>
+        <velocity_east>
+          <noiseAmp>0.3</noiseAmp>
+          <noiseFreq>0.0</noiseFreq>
+        </velocity_east>
+        <velocity_down>
+          <noiseAmp>0.3</noiseAmp>
+          <noiseFreq>0.0</noiseFreq>
+        </velocity_down>
+      </transient_current>
+      <tide_oscillation>1</tide_oscillation>
+      <robotNamespace>/glider_hybrid_whoi/</robotNamespace>
+    </plugin>
+  </model>
+</sdf>
