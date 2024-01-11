@@ -48,7 +48,7 @@
         <!-- Set up USBL Plugin for TX and RX -->
         <gazebo>
             <plugin name="${namespace}_tx" filename="libtransceiverPlugin.so">
-                <namespace>USBL Transciever</namespace>
+                <namespace>USBL_Transciever</namespace>
                 <transponder_device>trasnponder_manufacturer</transponder_device>
                 <transponder_ID>1</transponder_ID>
                 <transceiver_device>tranceiver_manufacturer</transceiver_device>
@@ -60,7 +60,7 @@
                 <ping_freq>2</ping_freq>
             </plugin>
             <plugin name='${namespace}_rx' filename='libtransponderPlugin.so'>
-                <namespace>USBL Transponder</namespace>
+                <namespace>USBL_Transponder</namespace>
                 <transponder_device>trasnponder_manufacturer</transponder_device>
                 <transponder_ID>1</transponder_ID>
                 <transceiver_device>tranceiver_manufacturer</transceiver_device>
