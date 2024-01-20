@@ -7,7 +7,7 @@
     <xacro:include filename="$(find uuv_gazebo_ros_plugins)/urdf/snippets.xacro"/>
 
     <!-- Properties -->
-    <xacro:property name="mass" value="0.85"/> 
+    <xacro:property name="mass" value="0.45"/> 
     <xacro:property name="radius" value="0.05"/>
     <xacro:property name="length" value="0.3"/>
     <xacro:property name="namespace" value="basic_beacon"/>
@@ -33,11 +33,11 @@
             </collision>
             <inertial>
                 <mass value="${mass}"/>
-                <origin xyz="0 1 0" rpy="0 0 0"/>
+                <!--origin xyz="0 1 0" rpy="0 0 0"/-->
                 <inertia
                     ixx="0.12" ixy="0.0" ixz="0.0"
                     iyy="0.12" iyz="0.0"
-                    izz="0.11"/>
+                    izz="0.106"/>
             </inertial>
         </link>
 
@@ -69,6 +69,13 @@
                 <mu>0</mu>
                 <sigma>0.0</sigma>
             </plugin>
+            <!--plugin name="beacon_controller" filename="libSimple3dMovePlugin.so">
+                <commandTopic>cmd_vel</commandTopic>
+                <odometryTopic>odom</odometryTopic>
+                <odometryFrame>odom</odometryFrame>
+                <odometryRate>20.0</odometryRate>
+                <robotBaseFrame>base_footprint</robotBaseFrame>
+            </plugin-->
         </gazebo>
     </xacro:macro>
 </robot>

@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="set_timeout" default="false"/>
+  <arg name="timeout" default="0.0"/>
+  <arg name="debug" default="false"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find ekg_auv_testing)/worlds/water_sim.world"/>
+    <arg name="extra_gazebo_args" value=""/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <!--arg name="headless" value="false"/-->
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  <include file="$(find uuv_assistants)/launch/publish_world_ned_frame.launch"/>
+
+  <node name="publish_world_models" pkg="uuv_assistants" type="publish_world_models.py" output="screen">
+    <rosparam subst_value="true">
+      meshes:
+        heightmap:
+          mesh: package://uuv_gazebo_worlds/models/sand_heightmap/meshes/heightmap.dae
+          model: sand_heightmap
+        seafloor:
+          plane: [2000, 2000, 0.1]
+          pose:
+            position: [0, 0 -100]
+        north:
+          plane: [0.1, 2000, 100]
+          pose:
+            position: [1000, 0, -50]
+        south:
+          plane: [0.1, 2000, 100]
+          pose:
+            position: [-1000, 0, -50]
+        west:
+          plane: [2000, 0.1, 100]
+          pose:
+            position: [0, -1000, -50]
+        east:
+          plane: [2000, 0.1, 100]
+          pose:
+            position: [0, 1000, -50]
+    </rosparam>
+  </node>
+
+  <group if="$(arg set_timeout)">
+    <include file="$(find uuv_assistants)/launch/set_simulation_time.launch">
+      <arg name="timeout" value="$(arg timeout)"/>
+    </include>
+  </group>
+
+  <arg name="use_ned_frame" default="false"/>
+  <!--arg name="joy_id" default="0"/-->
+
+  <!-- Glider 1 -->
+  <include file="$(find ekg_auv_testing)/launch/upload_vehicle_kinematics.launch">
+    <arg name="robot_name" value="glider_1"/>
+    <arg name="x" value="0"/>
+    <arg name="y" value="0"/>
+    <arg name="z" value="-40"/>
+    <arg name="roll" value="0"/>
+    <arg name="pitch" value="0"/>
+    <arg name="yaw" value="0"/>
+  </include>
+
+  <!-- Initialize the recording fo the simulation according to the record flag  -->
+  <!--include file="$(find glider_hybrid_whoi_gazebo)/launch/record_demo.launch">
+    <arg name="namespace" value="glider_hybrid_whoi"/>
+    <arg name="use_ned_frame" value="$(arg use_ned_frame)"/>
+  </include-->
+
+  <!-- Glider 2 -->
+  <!--include file="$(find ekg_auv_testing)/launch/upload_vehicle_kinematics.launch">
+    <arg name="robot_name" value="glider_2"/>
+    <arg name="x" value="-3"/>
+    <arg name="y" value="-3"/>
+    <arg name="z" value="-40"/>
+  </include-->
+
+  <!-- Initialize the recording fo the simulation according to the record flag  -->
+  <!--include file="$(find glider_hybrid_whoi_gazebo)/launch/record_demo.launch">
+    <arg name="namespace" value="auv_2"/>
+    <arg name="use_ned_frame" value="$(arg use_ned_frame)"/>
+  </include-->
+
+  <!-- Dead reckoning node -->
+  <!--include file="$(find glider_deadreckoning)/launch/deadreckon.launch"/>
+
+  <include file="$(find glider_hybrid_whoi_control)/launch/start_auv_teleop.launch"/-->
+    <!--arg name="joy_id" default="$(arg joy_id)"/>
+  </include-->
+
+ <!--node pkg="ekg_auv_testing" name="uwgc_tester_node" type="TestingUwGliderCommands.py" output="screen"/-->
+ 
+  <!--node pkg="ekg_auv_testing" name="simple_nav_node" type="SimpleNavigator.py" output="screen"/-->
+
+  <!--node pkg="ekg_auv_testing" name="simple_path_node" type="SimplePath.py" output="screen"/>
+  <node pkg="ekg_auv_testing" name="project_path_node" type="ProjectedPath.py" output="screen"/-->
+
+</launch>

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.1.1)
 project(ekg_auv_testing)
 
-
 find_package(catkin REQUIRED COMPONENTS
    roscpp
    rospy

@@ -7,7 +7,7 @@ from frl_vehicle_msgs.msg import UwGliderCommand, UwGliderStatus
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
 from tf.transformations import euler_from_quaternion
-from graphing import Graphing3D
+from ekg_auv_testing.src.Graphing3D import Graphing3D
 
 AUV_TRUE_POSE_1 = "true_pose_1"
 AUV_EST_POSE_1 = "estimate_pose_1"
@@ -17,7 +17,7 @@ class UWGCTester():
         self.cmd = UwGliderCommand()
         self.grapher = Graphing3D()
         self.grapher.add_path(AUV_TRUE_POSE_1, "True Pose AUV 1")
-        # self.grapher.add_path(AUV_EST_POSE_1, "Estimated Pose AUV 1")
+        self.grapher.add_path(AUV_EST_POSE_1, "Estimated Pose AUV 1")
 
         #Sensor Data
         self.water_pressure = FluidPressure() # FluidPressure msg uses KiloPascals
@@ -125,7 +125,9 @@ class UWGCTester():
             self.pose_estimate.pose.position.y += d_y/math.sin(yaw*2.0*math.pi/360)
             self.pose_estimate.pose.position.z = self.depth_estimate
         
-        rospy.loginfo(f"Pose Estimate: ({self.pose_estimate.pose.position.x}, { self.pose_estimate.pose.position.y}, {self.pose_estimate.pose.position.z})")
+        est_pos = self.pose_estimate.pose.position
+        self.grapher.add_path_point(AUV_EST_POSE_1, est_pos.x, est_pos.y, est_pos.z)
+        #rospy.loginfo(f"Pose Estimate: ({self.pose_estimate.pose.position.x}, { self.pose_estimate.pose.position.y}, {self.pose_estimate.pose.position.z})")
         return self.pose_estimate if not None else PoseStamped()
 
     def status_msg(self, status):
@@ -296,10 +298,13 @@ class UWGCTester():
 
     def helix(self):
         pose_est = self.get_pose_estimate()
-        if pose_est is not None:
-            e_pos = pose_est.pose.position
-            self.grapher.add_path_point(AUV_EST_POSE_1, e_pos.x, e_pos.y, self.depth_estimate)
+        #if pose_est is not None:
+        #    e_pos = pose_est.pose.position
+        #    self.grapher.add_path_point(AUV_EST_POSE_1, e_pos.x, e_pos.y, self.depth_estimate)
         print("Helix")
+
+    def controller(self):
+        pass
 
     def test_commands(self):
         rate = rospy.Rate(10)

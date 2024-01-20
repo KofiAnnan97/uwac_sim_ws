@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>ekg_auv_testing</name>
-  <version>3.1.1</version>
-  <description>The dave_sensor_launch package</description>
+  <version>1.0.0</version>
+  <description>Multi beacon localization simulation package</description>
   <maintainer email="egbordzo@purdue.edu">dtd</maintainer>
   <license>Apache2</license>
   <author email="egbordzo@purdue.edu">dtd</author>
