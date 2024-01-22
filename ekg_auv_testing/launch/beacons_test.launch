@@ -28,21 +28,21 @@
     <arg name="robot_name" value="beacon_2"/>
     <arg name="x" value="0"/>
     <arg name="y" value="20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_3"/>
     <arg name="x" value="20"/>
     <arg name="y" value="0"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_4"/>
     <arg name="x" value="20"/>
     <arg name="y" value="20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">

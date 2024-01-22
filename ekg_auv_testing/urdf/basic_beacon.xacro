@@ -12,7 +12,6 @@
     <xacro:property name="length" value="0.3"/>
     <xacro:property name="namespace" value="basic_beacon"/>
 
-
     <!-- Robot Definition -->
     <xacro:macro name="basic_beacon" params="namespace debug inertial_reference_frame">
         <link name="${namespace}/base_link">
@@ -69,13 +68,33 @@
                 <mu>0</mu>
                 <sigma>0.0</sigma>
             </plugin>
-            <!--plugin name="beacon_controller" filename="libSimple3dMovePlugin.so">
-                <commandTopic>cmd_vel</commandTopic>
-                <odometryTopic>odom</odometryTopic>
-                <odometryFrame>odom</odometryFrame>
-                <odometryRate>20.0</odometryRate>
-                <robotBaseFrame>base_footprint</robotBaseFrame>
-            </plugin-->
         </gazebo>
+        
+        <!-- Pressure Sensor -->
+        <xacro:pressure_plugin_macro
+            namespace="${namespace}"
+            suffix=""
+            parent_link="${namespace}/base_link"
+            topic="pressure"
+            mass="0.015"
+            update_rate="10"
+            range="1362"
+            noise_sigma="3.0"
+            noise_amplitude="0.0"
+            estimateDepth="true"
+            standardPressure="101.325"
+            kPaPerM="9.80638">
+            <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+            <origin xyz="0.0 0.0 0.0" rpy="0 ${0.355556*pi} 0" />
+        </xacro:pressure_plugin_macro>
+
+        <!-- IMU Sensor -->
+        <xacro:include filename="$(find glider_hybrid_whoi_description)/urdf/uw_hector_imu_plugin.xacro"/>
+
+        <!-- GPS Sensor -->
+        <!--xacro:include filename="$(find glider_hybrid_whoi_description)/urdf/uw_hector_gps_plugin.xacro"/-->
+
+
     </xacro:macro>
+
 </robot>

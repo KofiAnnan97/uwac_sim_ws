@@ -1,5 +1,6 @@
 import rospkg
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 
@@ -35,6 +36,18 @@ class XYZPath:
             return list(map(lambda pt: pt[2], self.path))
         else:
             return None
+        
+class PerformanceMetrics:
+    def __init__(self):
+        pass
+    def __get_distance(self,curr_pose, next_pose):
+        sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
+                         math.pow(curr_pose.position.y - next_pose.position.y, 2) + \
+                         math.pow(curr_pose.position.z - next_pose.position.z, 2)
+        dist = math.sqrt(math.fabs(sum_of_squares))
+        return dist
+    def calculate_mse(self, estimate, true):
+        pass
 
 class Graphing3D:
     def __init__(self):
@@ -72,6 +85,7 @@ class Graphing3D:
         fig = plt.figure()
         ax = plt.axes(projection='3d')
         plt.title(title_name)
+        #ax.set_autoscale_on = True
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
@@ -84,6 +98,9 @@ class Graphing3D:
             z = path.get_z_pts()
             ax.plot(x, y, z, label=path.get_label())
         
+        ax.set_autoscalex_on = True
+        ax.set_autoscaley_on = True
+
         plt.legend()
         #plt.show()
         self.save_plot(title_name)

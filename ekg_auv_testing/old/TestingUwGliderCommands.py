@@ -7,17 +7,24 @@ from frl_vehicle_msgs.msg import UwGliderCommand, UwGliderStatus
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
 from tf.transformations import euler_from_quaternion
-from ekg_auv_testing.src.Graphing3D import Graphing3D
+
+from Graphing3D import Graphing3D
+from TestWaypointPaths import get_circle_path, get_helix_path, get_double_helix_path
+
 
 AUV_TRUE_POSE_1 = "true_pose_1"
-AUV_EST_POSE_1 = "estimate_pose_1"
+#AUV_EST_POSE_1 = "estimate_pose_1"
+
+#Circle
+WAYPOINTS = get_circle_path()
+
 
 class UWGCTester():
     def __init__(self):
         self.cmd = UwGliderCommand()
         self.grapher = Graphing3D()
         self.grapher.add_path(AUV_TRUE_POSE_1, "True Pose AUV 1")
-        self.grapher.add_path(AUV_EST_POSE_1, "Estimated Pose AUV 1")
+        #self.grapher.add_path(AUV_EST_POSE_1, "Estimated Pose AUV 1")
 
         #Sensor Data
         self.water_pressure = FluidPressure() # FluidPressure msg uses KiloPascals
@@ -126,7 +133,7 @@ class UWGCTester():
             self.pose_estimate.pose.position.z = self.depth_estimate
         
         est_pos = self.pose_estimate.pose.position
-        self.grapher.add_path_point(AUV_EST_POSE_1, est_pos.x, est_pos.y, est_pos.z)
+        #self.grapher.add_path_point(AUV_EST_POSE_1, est_pos.x, est_pos.y, est_pos.z)
         #rospy.loginfo(f"Pose Estimate: ({self.pose_estimate.pose.position.x}, { self.pose_estimate.pose.position.y}, {self.pose_estimate.pose.position.z})")
         return self.pose_estimate if not None else PoseStamped()
 
@@ -288,7 +295,7 @@ class UWGCTester():
 
     def circle_test(self, start_time):
         curr_time = rospy.Time.now()
-        if curr_time.secs - start_time.secs < 60:
+        if curr_time.secs - start_time.secs < 5: #30
             self.circle()
             time.sleep(3)
         else:
@@ -319,6 +326,11 @@ if __name__ == "__main__":
         rospy.init_node("UwGlider_tester")
         tester = UWGCTester()
         tester.init_app()
+        waypts = "waypoints"
+        tester.grapher.add_path(waypts,"Waypoints")
+        for point in WAYPOINTS:
+            tester.grapher.add_path_point(waypts, point[0], point[1], point[2])
         tester.test_commands()
     except rospy.ROSInterruptException:
         rospy.loginfo("UwGliderCommand Tester terminated.")
+        #tester.grapher.save_plot("Test UWGC")

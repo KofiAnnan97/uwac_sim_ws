@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="ekg_auv_testing" type="WaypointNavigator.py" name="nav" output="screen">
+  </node>
+</launch>

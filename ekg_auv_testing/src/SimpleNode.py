@@ -25,6 +25,7 @@ class SimpleNode:
         self.init_pose.pose.position.z = float(argv[4])
         self.curr_pose = self.true_pose #PoseStamped()
         
+        self.water_pressure = FluidPressure()
         self.imu = Imu()
         self.gps = NavSatFix()
     
@@ -47,6 +48,10 @@ class SimpleNode:
         COMMON_TOPIC = '/USBL/common_interrogation_ping'
         INDIVIDUAL_TOPIC = '/USBL/transponder_manufacturer_1/individual_interrogation_ping'
 
+        # Sensor Topics
+        IMU_TOPIC = f'/{argv[1]}/'
+        PRESSURE_TOPIC = f'/{argv[1]}/'
+        GPS_TOPIC = f'/{argv[1]}/'
 
         self.rate = rospy.Rate(10)
 
@@ -58,6 +63,9 @@ class SimpleNode:
         # Subscribers
         rospy.Subscriber(TRUE_POSE_TOPIC, PoseStamped, self.__true_pose_cbk)
         rospy.Subscriber(ODOM_TOPIC, Odometry, self.__odom_cbk)
+        # rospy.Subscriber(IMU_TOPIC, Imu, self.__imu_cbk)
+        # rospy.Subscriber(PRESSURE_TOPIC, FluidPressure, self.__pressure_cbk)
+        # rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
 
     def __true_pose_cbk(self, data):
         self.true_pose = data
@@ -66,11 +74,25 @@ class SimpleNode:
         pos = data.pose.position
         rospy.loginfo(f"{argv}: ({pos.x}, {pos.y}, {pos.z})")
 
+    def calc_depth(self):
+        depth = 0
+        try:
+            standardPressure = 101.325                    # data found in glider_hybrid_whoi/glidereckoining/nodes/deadreckoning_estimator.py 
+            KPaPerM = 9.80838
+            depth = -round((self.water_pressure.fluid_pressure - standardPressure)/KPaPerM, 2)
+            return depth
+            # rospy.loginfo(f"Depth Estimate: {self.depth_estimate}, Actual Depth: {self.true_pose.pose.position.z}")
+        except:
+            return None
+
     def __imu_cbk(self, data):
         self.imu = data
-        orient = self.imu.orientation
-        a_vel = self.imu.angular_velocity
-        l_acc = self.imu.linear_acceleration
+        # orient = self.imu.orientation
+        # _vel = self.imu.angular_velocity
+        # l_acc = self.imu.linear_acceleration
+
+    def __pressure_cbk(self, data):
+        self.water_pressure = data
 
     def __gps_cbk(self, data):
         try:        

@@ -61,9 +61,9 @@
   <!-- Glider 1 -->
   <include file="$(find ekg_auv_testing)/launch/upload_vehicle_kinematics.launch">
     <arg name="robot_name" value="glider_1"/>
-    <arg name="x" value="0"/>
+    <arg name="x" value="-10"/>
     <arg name="y" value="0"/>
-    <arg name="z" value="-40"/>
+    <arg name="z" value="-18.5"/>
     <arg name="roll" value="0"/>
     <arg name="pitch" value="0"/>
     <arg name="yaw" value="0"/>
@@ -75,32 +75,10 @@
     <arg name="use_ned_frame" value="$(arg use_ned_frame)"/>
   </include-->
 
-  <!-- Glider 2 -->
-  <!--include file="$(find ekg_auv_testing)/launch/upload_vehicle_kinematics.launch">
-    <arg name="robot_name" value="glider_2"/>
-    <arg name="x" value="-3"/>
-    <arg name="y" value="-3"/>
-    <arg name="z" value="-40"/>
-  </include-->
-
-  <!-- Initialize the recording fo the simulation according to the record flag  -->
-  <!--include file="$(find glider_hybrid_whoi_gazebo)/launch/record_demo.launch">
-    <arg name="namespace" value="auv_2"/>
-    <arg name="use_ned_frame" value="$(arg use_ned_frame)"/>
-  </include-->
+  <!-- Glider Movement node -->
+  <!--include file="$(find ekg_auv_testing)/launch/glider_navigation.launch"/-->
 
   <!-- Dead reckoning node -->
-  <!--include file="$(find glider_deadreckoning)/launch/deadreckon.launch"/>
-
-  <include file="$(find glider_hybrid_whoi_control)/launch/start_auv_teleop.launch"/-->
-    <!--arg name="joy_id" default="$(arg joy_id)"/>
-  </include-->
-
- <!--node pkg="ekg_auv_testing" name="uwgc_tester_node" type="TestingUwGliderCommands.py" output="screen"/-->
- 
-  <!--node pkg="ekg_auv_testing" name="simple_nav_node" type="SimpleNavigator.py" output="screen"/-->
-
-  <!--node pkg="ekg_auv_testing" name="simple_path_node" type="SimplePath.py" output="screen"/>
-  <node pkg="ekg_auv_testing" name="project_path_node" type="ProjectedPath.py" output="screen"/-->
+  <!--include file="$(find glider_deadreckoning)/launch/deadreckon.launch"/-->
 
 </launch>
