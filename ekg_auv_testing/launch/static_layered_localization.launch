@@ -19,9 +19,9 @@
   <!-- Glider-->
   <include file="$(find ekg_auv_testing)/launch/upload_vehicle_kinematics.launch">
     <arg name="robot_name" value="glider_1"/>
-    <arg name="x" value="0"/>
-    <arg name="y" value="10"/>
-    <arg name="z" value="-20"/>
+    <arg name="x" value="2"/>
+    <arg name="y" value="5"/>
+    <arg name="z" value="-30"/>
     <arg name="roll" value="0"/>
     <arg name="pitch" value="0"/>
     <arg name="yaw" value="0"/>
@@ -30,69 +30,81 @@
   <!-- Beacons -->
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_1"/>
+    <arg name="bid" value="1"/>
+    <arg name="transceiver_id" value="168"/>
     <arg name="x" value="0"/>
     <arg name="y" value="0"/>
     <arg name="z" value="-0.2"/>
   </include>
 
-  <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
+  <!--include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_2"/>
+    <arg name="bid" value="2"/>
+    <arg name="transceiver_id" value="142"/>
     <arg name="x" value="0"/>
     <arg name="y" value="20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_3"/>
+    <arg name="bid" value="3"/>
     <arg name="x" value="20"/>
     <arg name="y" value="0"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_4"/>
+    <arg name="bid" value="4"/>
     <arg name="x" value="20"/>
     <arg name="y" value="20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_5"/>
+    <arg name="bid" value="5"/>
     <arg name="x" value="40"/>
     <arg name="y" value="0"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_6"/>
+    <arg name="bid" value="6"/>
     <arg name="x" value="40"/>
     <arg name="y" value="20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_7"/>
+    <arg name="bid" value="7"/>
     <arg name="x" value="0"/>
     <arg name="y" value="-20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_8"/>
+    <arg name="bid" value="8"/>
     <arg name="x" value="20"/>
     <arg name="y" value="-20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_9"/>
+    <arg name="bid" value="9"/>
     <arg name="x" value="40"/>
     <arg name="y" value="-20"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="-0.2"/>
   </include>
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_10"/>
+    <arg name="bid" value="10"/>
     <arg name="x" value="0"/>
     <arg name="y" value="0"/>
     <arg name="z" value="-40"/>
@@ -100,6 +112,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_11"/>
+    <arg name="bid" value="11"/>
     <arg name="x" value="0"/>
     <arg name="y" value="20"/>
     <arg name="z" value="-40"/>
@@ -107,6 +120,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_12"/>
+    <arg name="bid" value="12"/>
     <arg name="x" value="20"/>
     <arg name="y" value="0"/>
     <arg name="z" value="-40"/>
@@ -114,6 +128,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_13"/>
+    <arg name="bid" value="13"/>
     <arg name="x" value="20"/>
     <arg name="y" value="20"/>
     <arg name="z" value="-40"/>
@@ -121,6 +136,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_14"/>
+    <arg name="bid" value="14"/>
     <arg name="x" value="40"/>
     <arg name="y" value="0"/>
     <arg name="z" value="-40"/>
@@ -128,6 +144,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_15"/>
+    <arg name="bid" value="15"/>
     <arg name="x" value="40"/>
     <arg name="y" value="20"/>
     <arg name="z" value="-40"/>
@@ -135,6 +152,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_16"/>
+    <arg name="bid" value="16"/>
     <arg name="x" value="0"/>
     <arg name="y" value="-20"/>
     <arg name="z" value="-40"/>
@@ -142,6 +160,7 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_17"/>
+    <arg name="bid" value="17"/>
     <arg name="x" value="20"/>
     <arg name="y" value="-20"/>
     <arg name="z" value="-40"/>
@@ -149,8 +168,9 @@
 
   <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_18"/>
+    <arg name="bid" value="18"/>
     <arg name="x" value="40"/>
     <arg name="y" value="-20"/>
     <arg name="z" value="-40"/>
-  </include>
+  </include-->
 </launch>

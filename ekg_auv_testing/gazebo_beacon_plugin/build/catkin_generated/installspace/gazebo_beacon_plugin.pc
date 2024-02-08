@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: gazebo_beacon_plugin
-Description: Description of gazebo_beacon_plugin
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

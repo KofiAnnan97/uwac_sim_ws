@@ -1,17 +1,19 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot_name" default="basic_beacon"/>
+  <arg name="bid" default="-1"/>
+  <arg name="transceiver_id" default="168"/>
   <arg name="debug" default="0" doc="Sets the DEBUG flag for the uuv_simulator's plugins for verbose mode"/>
   <arg name="use_geodetic" default="false"/>
   <arg name="init_pose" default="-x 0 -y 0 -z -1 -Y 3.14"/>
   <arg name="x" default="0" doc="Initial x (ENU)"/>
   <arg name="y" default="0" doc="Initial y (ENU)"/>
-  <arg name="z" default="-5" doc="Initial z (ENU)"/>
+  <arg name="z" default="-5" doc="Initial z (ENU)"/> 
   <arg name="roll" default="0.0" doc="Roll angle of the initial orientation to spawn the model (in ENU)"/>
   <arg name="pitch" default="0.0" doc="Pitch angle of the initial orientation to spawn the model (in ENU)"/>
   <arg name="yaw" default="0.0" doc="Yaw angle of the initial orientation to spawn the model (in ENU)"/>
-
   <arg name="use_ned_frame" default="true"/>
+  <arg name="node_start_delay" default="5.0" />
 
   <!-- Beacon namespace -->
   <arg name="namespace" value="$(arg robot_name)"/>
@@ -22,6 +24,8 @@
               command="$(find xacro)/xacro '$(find ekg_auv_testing)/urdf/basic_beacon_default.urdf.xacro'
                 debug:=$(arg debug)
                 namespace:=$(arg namespace)
+                transceiver_id:=$(arg transceiver_id)
+                transponder_id:=$(arg bid)
                 inertial_reference_frame:=world_ned"/>
     </group>
 
@@ -30,6 +34,8 @@
               command="$(find xacro)/xacro '$(find ekg_auv_testing)/urdf/basic_beacon_default.urdf.xacro'
                 debug:=$(arg debug)
                 namespace:=$(arg namespace)
+                transceiver_id:=$(arg transceiver_id)
+                transponder_id:=$(arg bid)
                 inertial_reference_frame:=world"/>
     </group>
 
@@ -61,6 +67,13 @@
     <arg name="child_frame_id" value="/$(arg namespace)/base_link"/> 
   </include>
 
-  <node pkg="ekg_auv_testing" name="$(arg namespace)_node" type="SimpleNode.py" output="screen" args="$(arg namespace) $(arg x) $(arg y) $(arg z)"/>
+  <!--node 
+    pkg="ekg_auv_testing" 
+    name="$(arg namespace)_node" 
+    type="SimpleBeaconNode.py" 
+    output="screen" 
+    args="$(arg namespace) $(arg bid) $(arg x) $(arg y) $(arg z) $(arg transceiver_id)"
+    launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "
+  /-->
 
 </launch>

@@ -1,8 +1,0 @@
-prefix=/home/ekg_unix/GitHub/research/simulation/uuv_ws/src/ekg_auv_testing/gazebo_beacon_plugin/build/devel
-
-Name: gazebo_beacon_plugin
-Description: Description of gazebo_beacon_plugin
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

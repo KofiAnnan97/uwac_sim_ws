@@ -6,7 +6,7 @@
   <arg name="debug" default="false"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find ekg_auv_testing)/worlds/test_sim.world"/>
+    <arg name="world_name" value="$(find ekg_auv_testing)/worlds/usbl_test.world"/>
     <arg name="extra_gazebo_args" value=""/>
     <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="true"/>
@@ -15,22 +15,5 @@
     <arg name="debug" value="$(arg debug)"/>
     <arg name="verbose" value="$(arg verbose)"/>
   </include>
-
-  <!--node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find ekg_auv_testing)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-    <rosparam file="$(find ekg_auv_testing)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find ekg_auv_testing)/config/local_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find ekg_auv_testing)/config/global_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find ekg_auv_testing)/config/base_local_planner_params.yaml" command="load"/>
-  </node-->
-
-  <!--include file="$(find turtlebot3_navigation)/launch/amcl.launch"/-->
-
-  <node pkg="ekg_auv_testing" name="simple_nav_node" type="SimpleNavigator.py" output="screen"/>
-
-  <!--node pkg="ekg_auv_testing" name="simple_path_node" type="SimplePath.py" output="screen"/>
-    <param name="goal_fram"
-  </node>
-  <node pkg="ekg_auv_testing" name="project_path_node" type="ProjectedPath.py" output="screen"/-->
 
 </launch>

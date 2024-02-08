@@ -3,15 +3,21 @@
 import rospy
 import math
 import time
+import json
 
 from frl_vehicle_msgs.msg import UwGliderCommand, UwGliderStatus
-from geometry_msgs.msg import PoseStamped, Pose, Quaternion
+from geometry_msgs.msg import PoseStamped, Pose, Quaternion, Vector3
 from nav_msgs.msg import Path
 from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
+from std_msgs.msg import String
 from tf.transformations import euler_from_quaternion
+
+from StringtoROSmsg import StringtoROSmsg
+from rospy_message_converter import message_converter, json_message_converter
 
 from Graphing3D import Graphing3D
 from TestWaypointPaths import get_circle_path, get_helix_path, get_double_helix_path
+from USBL import Transponder
 
 AUV_TRUE_POSE_1 = "true_pose"
 AUV_EST_POSE_1 = "estimate_pose"
@@ -25,9 +31,19 @@ PITCH_LOWER_LIMIT = 0.52  # [radians]
 WAYPOINTS = get_circle_path()
 COMPLETION_THRESHOLD = 1.5
 
+INDIVIDUAL_MSG = {"data": 'individual'}
+COMMON_MSG = {"data": 'common'}
+HELLO_MSG = {"data": 'Send position'}
+
 class WaypointFollower():
     def __init__(self):
         self.rate = rospy.Rate(10)
+
+        self.transponder_id = "1"
+        self.transponder_model = ""
+        self.transceiver_id = "168"
+        self.transceiver_model = ""
+        self.rx = Transponder(self.transponder_id, self.transponder_model, self.transceiver_id, self.transceiver_model)
 
         self.grapher = Graphing3D()
         self.grapher.add_path(AUV_TRUE_POSE_1, "True Pose AUV 1")
@@ -44,9 +60,16 @@ class WaypointFollower():
 
         self.aoa_deg = -3.0
         self.prev_depth = float("inf")
-        self.est_pose = None
+
+        # Deadreckoning Pose Estimation
+        self.est_pose = PoseStamped()
         #self.est_pose.pose = self.init_pose.pose
 
+        # Beacon Pose Estimation
+        self.neighbors = dict()
+        self.beacon_estimates = list()
+        self.beacon_est_pose = PoseStamped()
+        
         # Sensor Data
         self.water_pressure = FluidPressure()
         self.imu = Imu()
@@ -77,17 +100,30 @@ class WaypointFollower():
     def __status_cbk(self, data):
         self.uwg_status = data
         # rospy.loginfo(self.status_msg(self.uwg_status))
-    
-    def calc_depth(self):
-        depth = 0
-        try:
-            standardPressure = 101.325                    # data found in glider_hybrid_whoi/glidereckoining/nodes/deadreckoning_estimator.py 
-            KPaPerM = 9.80838
-            depth = -round((self.water_pressure.fluid_pressure - standardPressure)/KPaPerM, 2)
-            return depth
-            # rospy.loginfo(f"Depth Estimate: {self.depth_estimate}, Actual Depth: {self.true_pose.pose.position.z}")
-        except:
-            return None
+
+    def __comm_cbk(self, msg):
+        #print(msg)
+        if msg is not None:
+            msg_str = msg.data
+            if msg_str != 'ping':
+                print(msg_str)
+                msg_obj = json.loads(msg_str)
+                print(msg_obj)
+                bid = msg_obj["bid"]
+                # print(msg_obj["pose"]["position"])
+                
+                if bid not in self.neighbors.keys():        
+                    self.neighbors[bid] = PoseStamped()
+            
+                del msg_obj["bid"]
+                msg_str = json.dumps(msg_obj) 
+                pos_msg = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_str)
+                self.neighbors[bid] = pos_msg #strm.rosmsg_from_str(msg_str)
+        
+                """rospy.loginfo("--------------------------------")
+                for bid, node in self.neighbors.items():
+                    rospy.loginfo(f"{bid}: ({node.pose.position.x}, {node.pose.position.y}, {node.pose.position.z})")
+                rospy.loginfo("--------------------------------")"""
 
     def __pressure_cbk(self, data):
         self.water_pressure = data
@@ -98,12 +134,23 @@ class WaypointFollower():
         self.imu = data
         #self.update_pose_estimate(self.aoa_deg*math.pi/180)
 
-
     def __gps_cbk(self, data):
         try:        
             self.gps = data
         except:
             pass
+
+     # Averaging position estimation from neighboring beacons
+    def __loc_cbk(self, data):
+        if data is not None:
+            self.beacon_estimates.append(data)
+    
+    def __get_distance(self,curr_pose, next_pose):
+        sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
+                         math.pow(curr_pose.position.y - next_pose.position.y, 2) + \
+                         math.pow(curr_pose.position.z - next_pose.position.z, 2)
+        dist = math.sqrt(math.fabs(sum_of_squares))
+        return dist
 
     def get_path(self):
         path = Path()
@@ -114,14 +161,37 @@ class WaypointFollower():
             tmp_pose.pose.position.z = pt[2]
             path.poses.append(tmp_pose)
         return path
-    
 
-    def __get_distance(self,curr_pose, next_pose):
-        sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
-                         math.pow(curr_pose.position.y - next_pose.position.y, 2) + \
-                         math.pow(curr_pose.position.z - next_pose.position.z, 2)
-        dist = math.sqrt(math.fabs(sum_of_squares))
-        return dist
+    def calc_depth(self):
+        depth = 0
+        try:
+            standardPressure = 101.325                    # data found in glider_hybrid_whoi/glidereckoining/nodes/deadreckoning_estimator.py 
+            KPaPerM = 9.80838
+            depth = -round((self.water_pressure.fluid_pressure - standardPressure)/KPaPerM, 2)
+            return depth
+            # rospy.loginfo(f"Depth Estimate: {self.depth_estimate}, Actual Depth: {self.true_pose.pose.position.z}")
+        except:
+            return None
+        
+    def get_pose_average(self):
+        x = 0
+        y = 0
+        z = 0
+        for node in self.beacon_estimates:
+            try:
+                x += node.pose.position.x
+                y += node.pose.position.y
+                z += node.pose.position.z
+            except:
+                pass
+        beacon_num = len(self.beacon_estimates)
+        if beacon_num > 0:
+            tmp_pose = PoseStamped()
+            tmp_pose.pose.position.x = x/beacon_num
+            tmp_pose.pose.position.y = y/beacon_num
+            tmp_pose.pose.position.z = z/beacon_num
+            return tmp_pose
+        return None
 
     def status_msg(self, status):
         return f"""
@@ -142,15 +212,39 @@ class WaypointFollower():
         PRESSURE_TOPIC = f'/{argv[1]}/pressure'
         GPS_TOPIC = f'/{argv[1]}/hector_gps'
 
+        # Transciever Topics
+        RESPONSE_TOPIC = "/USBL/transceiver_manufacturer_168/command_response"
+        INTERROGATION_TOPIC = '/USBL/transceiver_manufacturer_168/interrogation_mode'
+        CHANNEL_SWITCH_TOPIC = '/USBL/transceiver_manufacturer_168/channel_switch'
+        LOCATION_TOPIC = "/USBL/transceiver_manufacturer_168/transponder_location_cartesion"
+
+        # Transponder Topics
+        REQUEST_TOPIC = "/USBL/transponder_manufacturer_1/command_request"
+        COMMON_TOPIC = '/USBL/common_interrogation_ping'
+        INDIVIDUAL_TOPIC = '/USBL/transponder_manufacturer_1/individual_interrogation_ping'
+
         #Initialize Publishers
         self.command_pub = rospy.Publisher(UWGC_TOPIC, UwGliderCommand, queue_size=1)
-        
+        self.ch_switch_pub = rospy.Publisher(CHANNEL_SWITCH_TOPIC, String, queue_size=1)
+
         #Initializee Subscribers
         rospy.Subscriber(TRUE_POSE_TOPIC, PoseStamped, self.__true_pose_cbk)
         rospy.Subscriber(UWGS_TOPIC, UwGliderStatus, self.__status_cbk)
         rospy.Subscriber(PRESSURE_TOPIC, FluidPressure, self.__pressure_cbk)
         rospy.Subscriber(IMU_TOPIC, Imu, self.__imu_cbk)
         rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
+        rospy.Subscriber(COMMON_TOPIC, String, self.__comm_cbk)
+        rospy.Subscriber(LOCATION_TOPIC, Vector3, self.__loc_cbk)
+
+    def ping_neigbors(self):
+        msg_str = json.dumps(INDIVIDUAL_MSG)
+        self.ch_switch_pub.publish(msg_str)
+
+        for bid in self.neighbors.keys():
+            NEIGHBOR_TOPIC = f"/USBL/transponder_manufacturer_{bid}/individual_interrogation_ping"
+            hello_pub = rospy.Publisher(NEIGHBOR_TOPIC, String, queue_size=1)
+            hello_str = json.dumps(HELLO_MSG)
+            hello_pub.publish(hello_str)
 
     def update_pose_estimate(self, aoa_rad):
         orient = self.imu.orientation
@@ -195,8 +289,8 @@ class WaypointFollower():
         t_pos = self.true_pose.pose.position
         self.grapher.add_path_point(AUV_TRUE_POSE_1, t_pos.x, t_pos.y, t_pos.z)
         self.grapher.add_path_point(AUV_EST_POSE_1, e_pos.x, e_pos.y, e_pos.z)
-        rospy.loginfo(f"Current position: ({t_pos.x}, {t_pos.y}, {t_pos.z})")
-        rospy.loginfo(f"Estimated position: ({e_pos.x}, {e_pos.y}, {e_pos.z})")
+        #rospy.loginfo(f"Current position: ({t_pos.x}, {t_pos.y}, {t_pos.z})")
+        #rospy.loginfo(f"Estimated position: ({e_pos.x}, {e_pos.y}, {e_pos.z})")
         return self.est_pose if not None else PoseStamped()
 
     def get_path_idx(self, path, vehicle_pose):
@@ -303,8 +397,8 @@ class WaypointFollower():
 
         self.cmd.header.stamp = rospy.Time.now()
         self.cmd.pitch_cmd_type = 1
-        self.cmd.target_pitch_value = 0
-        self.cmd.target_pumped_volume = 0 #100.0
+        self.cmd.target_pitch_value = 0.4
+        self.cmd.target_pumped_volume = 50 #100.0
         self.cmd.rudder_control_mode = 1
         self.cmd.target_heading = self.yaw_in_deg #160 #4.0*math.pi/9.0
         self.cmd.motor_cmd_type = 1
@@ -313,14 +407,13 @@ class WaypointFollower():
 
     def circle_test(self, start_time):
         curr_time = rospy.Time.now()
-        if curr_time.secs - start_time.secs < 40: #30
-            self.circle()
-            time.sleep(3)
-        else:
-            self.stop()
-            self.grapher.show_plot("AUV Helical Test")
-            rospy.signal_shutdown("Task Complete")
-
+        #if curr_time.secs - start_time.secs < 40000: #30
+        self.circle()
+        time.sleep(2)
+        #else:
+        #    self.stop()
+        #    self.grapher.show_plot("AUV Helical Test")
+        #    rospy.signal_shutdown("Task Complete")
 
     def run(self):
         path = self.get_path()
@@ -334,23 +427,23 @@ class WaypointFollower():
 
         while not rospy.is_shutdown():
             self.circle_test(start_time)
-            if len(path.poses) != 0:
+            """if len(path.poses) != 0:
                 path_idx = self.get_path_idx(path, self.true_pose)
                 current_goal = path.poses[path_idx]
-                rospy.loginfo("---------------------------------------------------------------------------------")
+                #rospy.loginfo("---------------------------------------------------------------------------------")
                 #rospy.loginfo(f"Current position: ({self.true_pose.pose.position.x}, {self.true_pose.pose.position.y}, {self.true_pose.pose.position.z})")
                 #rospy.loginfo(f"Current goal: ({current_goal.pose.position.x}, {current_goal.pose.position.y}, {current_goal.pose.position.z})")
                 desired_heading, desired_pitch, tank_val = self.get_desired_values(self.true_pose, current_goal)
                 self.command_vehicle(desired_heading, desired_pitch, tank_val)
                 #rospy.loginfo(self.status_msg(self.uwg_status))
-                rospy.loginfo("---------------------------------------------------------------------------------")
+                #rospy.loginfo("---------------------------------------------------------------------------------")
                 if math.fabs(self.true_pose.pose.position.x - goal_pose.position.x) <= COMPLETION_THRESHOLD and \
                    math.fabs(self.true_pose.pose.position.y - goal_pose.position.y) <= COMPLETION_THRESHOLD and \
                    math.fabs(self.true_pose.pose.position.y - goal_pose.position.y) <= COMPLETION_THRESHOLD:
                     path_complete = True
             if path_complete == True:
                 self.grapher.show_plot("Waypoint Navigation")
-                rospy.signal_shutdown("Path Complete")
+                rospy.signal_shutdown("Path Complete")"""
             self.rate.sleep() 
 
 if __name__ == "__main__":

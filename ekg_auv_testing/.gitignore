@@ -2,4 +2,7 @@
 .vscode
 
 #Plugins
-gazebo_beacon_plugin/build/*
+build/
+
+# Python
+__pycache__/*git 
