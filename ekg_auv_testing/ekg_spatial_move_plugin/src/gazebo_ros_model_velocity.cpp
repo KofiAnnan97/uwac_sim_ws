@@ -26,7 +26,7 @@
  */
 
 #include <math.h>
-#include <gazebo_beacon_plugin/gazebo_ros_model_velocity.h>
+#include <gazebo_spatial_move_plugin/gazebo_ros_model_velocity.h>
 
 namespace gazebo 
 {

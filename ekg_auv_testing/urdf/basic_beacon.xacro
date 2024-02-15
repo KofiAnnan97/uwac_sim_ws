@@ -42,12 +42,12 @@
             </inertial-->
         </link>
 
-        <gazebo reference="link">                           
+        <!--gazebo reference="link">                           
             <material>Gazebo/Orange</material>
-        </gazebo>
+        </gazebo-->
         
-        <!-- Set up USBL Plugin for TX and RX -->
         <gazebo>
+            <!-- Set up USBL Plugin for TX and RX -->
             <!--plugin name="${namespace}_tx" filename="libtransceiverPlugin.so">
                 <namespace>USBL</namespace>
                 <transponder_device>transponder_manufacturer</transponder_device>

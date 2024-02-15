@@ -3,7 +3,7 @@
   <name>ekg_auv_testing</name>
   <version>1.0.0</version>
   <description>Multi beacon localization simulation package</description>
-  <maintainer email="egbordzo@purdue.edu">dtd</maintainer>
+  <maintainer email="egbordzo@purdue.edu">Elinam Gbordzoe</maintainer>
   <license>Apache2</license>
   <author email="egbordzo@purdue.edu">dtd</author>
   <buildtool_depend>catkin</buildtool_depend>

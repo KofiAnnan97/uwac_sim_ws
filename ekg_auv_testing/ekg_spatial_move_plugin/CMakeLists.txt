@@ -48,8 +48,8 @@ catkin_package(
 ## Build ##
 ###########
 include_directories(include ${catkin_INCLUDE_DIRS})
-add_library(ekg_spatial_move src/gazebo_spatial_move.cpp src/gazebo_ros_model_velocity.cpp src/speed_limiter.cpp)
-target_link_libraries(ekg_spatial_move ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
+add_library(gazebo_spatial_move src/gazebo_spatial_move.cpp) #src/speed_limiter.cpp src/gazebo_ros_model_velocity.cpp )
+target_link_libraries(gazebo_spatial_move ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
 
 
 #############
@@ -73,7 +73,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 install(TARGETS
-  ekg_spatial_move
+  gazebo_spatial_move
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

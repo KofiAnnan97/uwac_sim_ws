@@ -12,16 +12,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
    FILES
-   bcn_frame.msg
-   bcn_frame_array.msg
-   bcn_pose.msg
-   bcn_pose_array.msg
-   bcn_status.msg
-   bcn_status_array.msg
-   bcn_remote_gps.msg
-   loc.msg
-   IverOSI.msg
-   head.msg
+   #bcn_frame.msg
+   #bcn_frame_array.msg
+   #bcn_pose.msg
+   #bcn_pose_array.msg
+   #bcn_status.msg
+   #bcn_status_array.msg
+   #bcn_remote_gps.msg
+   #loc.msg
+   #IverOSI.msg
+   #head.msg
+   USBLRequestSim.msg
+   USBLResponseSim.msg
 )
 
 generate_messages(

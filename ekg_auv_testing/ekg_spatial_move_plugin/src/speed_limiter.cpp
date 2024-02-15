@@ -38,7 +38,7 @@
 
 #include <algorithm>
 
-#include <gazebo_beacon_plugin/speed_limiter.h>
+#include <gazebo_spatial_move_plugin/speed_limiter.h>
 
 template<typename T>
 T clamp(T x, T min, T max)

@@ -23,7 +23,7 @@
  */
 
 #include <math.h>
-#include <gazebo_beacon_plugin/gazebo_spatial_move.h>
+#include <gazebo_spatial_move_plugin/gazebo_spatial_move.h>
 
 namespace gazebo 
 {
