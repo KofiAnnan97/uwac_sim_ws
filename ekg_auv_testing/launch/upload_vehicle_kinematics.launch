@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot_name" default="vechicle"/>
+  <arg name="transponder_id" default="1"/>
   <arg name="debug" default="0" doc="Sets the DEBUG flag for the uuv_simulator's plugins for verbose mode"/>
   <arg name="use_geodetic" default="false"/>
   <arg name="init_pose" default="-x 0 -y 0 -z -1 -Y 3.14" />
@@ -68,7 +69,8 @@
     <arg name="child_frame_id" value="/$(arg namespace)/base_link"/>
   </include>
 
+  <!-- Glider Navigation -->
   <!--node pkg="ekg_auv_testing" name="$(arg namespace)_uwgc_tester" type="TestingUwGliderCommands.py" output="screen" args="$(arg namespace) $(arg x) $(arg y) $(arg z)"/-->
-  <node pkg="ekg_auv_testing" name="$(arg namespace)_wnav" type="WaypointNavigator.py" output="screen" args="$(arg namespace) $(arg x) $(arg y) $(arg z)"/>
+  <node pkg="ekg_auv_testing" name="$(arg namespace)_wnav" type="WaypointNavigator.py" output="screen" args="$(arg namespace) $(arg x) $(arg y) $(arg z) $(arg transponder_id)"/>
 
 </launch>

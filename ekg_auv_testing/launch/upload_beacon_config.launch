@@ -67,13 +67,12 @@
     <arg name="child_frame_id" value="/$(arg namespace)/base_link"/> 
   </include>
 
-  <!--node 
+  <node 
     pkg="ekg_auv_testing" 
-    name="$(arg namespace)_node" 
+    name="$(arg namespace)" 
     type="SimpleBeaconNode.py" 
     output="screen" 
     args="$(arg namespace) $(arg bid) $(arg x) $(arg y) $(arg z) $(arg transceiver_id)"
-    launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "
-  /-->
+  />
 
 </launch>

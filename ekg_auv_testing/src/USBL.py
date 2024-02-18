@@ -89,8 +89,8 @@ class Transceiver():
         MODE_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/mode'
         COMMON_TOPIC = '/USBL/common_ping'
 
-        RESPONSE_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/command_request'
-        REQUEST_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
+        REQUEST_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/command_request'
+        RESPONSE_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
 
         # Gazebo Subscribers
         #rospy.Subscriber(GAZEBO_GET_MODEL_STATE_TOPIC, ModelStates, self.__model_cbk)
@@ -108,7 +108,7 @@ class Transceiver():
         rospy.Subscriber(CHANNEL_TOPIC, String, self.__channel_cbk)
         rospy.Subscriber(MODE_TOPIC, String, self.__mode_cbk)
         rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, Point, self.__rx_loc_cbk)
-        # self.requests = rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
+        rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
 
 
     # Callback Functions
@@ -153,6 +153,7 @@ class Transceiver():
     def __request_cbk(self, data):
         if data is not None:
             if data.data == "location":
+                #print("REQUEST")
                 self.send_ping()
                 self.send_command_response()
                 
@@ -213,6 +214,15 @@ class Transceiver():
         # print(msg)
         self.resp_pub.publish(msg)
 
+    def send_msg(self, msg):
+        if self.mode == INTERROGATION_MODE[0]:
+            self.comm_pub.publish(msg)
+        elif self.mode == INTERROGATION_MODE[1]:
+            individual_pub = rospy.Publisher(f'/USBL/transponder_{self.transponder_id}/ping', String, queue_size=1)
+            individual_pub.publish(msg)
+
+
+
 class Transponder():
     def __init__(self, transponder_id, transceiver_id, model_name): 
         self.transponder_id = transponder_id
@@ -231,8 +241,8 @@ class Transponder():
         # Topics
         COMMON_TOPIC = '/USBL/common_ping'
         INDIVIDUAL_TOPIC = f'/USBL/transponder_{self.transponder_id}/ping'
-        REQUEST_TOPIC = f'/USBL/transponder_{self.transceiver_id}/command_request'
-        RESPONSE_TOPIC = f'/USBL/transceiver_{self.transponder_id}/command_response'
+        RESPONSE_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
+        REQUEST_TOPIC= f'/USBL/transceiver_{self.transceiver_id}/command_request'
 
         # Gazebo Subscribers
         rospy.Subscriber(GAZEBO_MODEL_STATES_TOPIC, ModelStates, self.__models_cbk)
@@ -244,6 +254,7 @@ class Transponder():
         # ROS Subscribers
         rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
         rospy.Subscriber(INDIVIDUAL_TOPIC, String, self.__individual_cbk)
+        rospy.Subscriber(RESPONSE_TOPIC, USBLResponseSim, self.__resp_cbk)
 
     """def __init__(self, transponder_id, transponder_model, transceiver_id, transceiver_model): 
         self.transponder_id = transponder_id
@@ -294,6 +305,11 @@ class Transponder():
         if data is not None:
             self.models = data
             self.rx_pose.pose = self.get_model_pos(self.transponder_model)
+
+    def __resp_cbk(self, data):
+        if data is not None:
+            #print(data)
+            self.command_resp = data
     
     # Methods
     def set_init_pose(self, x, y, z):
@@ -319,8 +335,12 @@ class Transponder():
         req.transceiverID = int(self.transceiver_id)
         req.transponderModelName = self.transponder_model
         req.data = "location"
+        #print(req)
         self.request_pub.publish(req)
 
+    def set_tx_channel(self, channel):
+        self.transceiver_id = channel
+    
     def get_response(self):
         return self.command_resp
 
@@ -368,7 +388,11 @@ class Transponder():
             print(e)
             # rospy.loginfo("Could not find location")
 
-if __name__ == "__main__":
+###########
+# TESTING #
+###########
+
+"""if __name__ == "__main__":
     rospy.init_node("usbl_comm_testing", anonymous=True)
 
     transponder_id = "1"
@@ -404,4 +428,4 @@ if __name__ == "__main__":
         rx1.transceiver_id = "168"
         rx1.transceiver_model = "box1"
         
-        rospy.Rate(10).sleep()
+        rospy.Rate(10).sleep()"""

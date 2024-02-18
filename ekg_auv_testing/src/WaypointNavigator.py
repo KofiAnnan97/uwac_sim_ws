@@ -6,7 +6,7 @@ import time
 import json
 
 from frl_vehicle_msgs.msg import UwGliderCommand, UwGliderStatus
-from geometry_msgs.msg import PoseStamped, Pose, Quaternion, Vector3
+from geometry_msgs.msg import PoseStamped, Pose, Quaternion, Vector3, Point
 from nav_msgs.msg import Path
 from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
 from std_msgs.msg import String
@@ -18,9 +18,11 @@ from rospy_message_converter import message_converter, json_message_converter
 from Graphing3D import Graphing3D
 from TestWaypointPaths import get_circle_path, get_helix_path, get_double_helix_path
 from USBL import Transponder
+from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim
 
 AUV_TRUE_POSE_1 = "true_pose"
 AUV_EST_POSE_1 = "estimate_pose"
+AUV_BEACON_POSE_1 = "beacon_pose"
 
 YAW_UPPER_LIMIT = 2.62    # [radians]
 YAW_LOWER_LIMIT = 0.52    # [radians]
@@ -37,13 +39,14 @@ HELLO_MSG = {"data": 'Send position'}
 
 class WaypointFollower():
     def __init__(self):
+        from sys import argv
         self.rate = rospy.Rate(10)
 
-        self.transponder_id = "1"
-        self.transponder_model = ""
-        self.transceiver_id = "168"
-        self.transceiver_model = ""
-        self.rx = Transponder(self.transponder_id, self.transponder_model, self.transceiver_id, self.transceiver_model)
+        self.transponder_id = argv[5]
+        #self.transponder_model = ""
+        self.transceiver_id = "141"
+        #self.transceiver_model = ""
+        self.rx = Transponder(self.transponder_id, self.transceiver_id, argv[1])
 
         self.grapher = Graphing3D()
         self.grapher.add_path(AUV_TRUE_POSE_1, "True Pose AUV 1")
@@ -67,7 +70,7 @@ class WaypointFollower():
 
         # Beacon Pose Estimation
         self.neighbors = dict()
-        self.beacon_estimates = list()
+        self.beacon_estimates = dict()
         self.beacon_est_pose = PoseStamped()
         
         # Sensor Data
@@ -106,9 +109,9 @@ class WaypointFollower():
         if msg is not None:
             msg_str = msg.data
             if msg_str != 'ping':
-                print(msg_str)
+                #print(msg_str)
                 msg_obj = json.loads(msg_str)
-                print(msg_obj)
+                #print(msg_obj)
                 bid = msg_obj["bid"]
                 # print(msg_obj["pose"]["position"])
                 
@@ -143,7 +146,14 @@ class WaypointFollower():
      # Averaging position estimation from neighboring beacons
     def __loc_cbk(self, data):
         if data is not None:
-            self.beacon_estimates.append(data)
+            #print(data)
+            #self.beacon_estimates.append(data)
+            pass
+
+    def __resp_cbk(self, data):
+        if data is not None:
+            pass
+            #print(data)
     
     def __get_distance(self,curr_pose, next_pose):
         sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
@@ -226,7 +236,7 @@ class WaypointFollower():
         #Initialize Publishers
         self.command_pub = rospy.Publisher(UWGC_TOPIC, UwGliderCommand, queue_size=1)
         self.ch_switch_pub = rospy.Publisher(CHANNEL_SWITCH_TOPIC, String, queue_size=1)
-
+ 
         #Initializee Subscribers
         rospy.Subscriber(TRUE_POSE_TOPIC, PoseStamped, self.__true_pose_cbk)
         rospy.Subscriber(UWGS_TOPIC, UwGliderStatus, self.__status_cbk)
@@ -235,6 +245,36 @@ class WaypointFollower():
         rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
         rospy.Subscriber(COMMON_TOPIC, String, self.__comm_cbk)
         rospy.Subscriber(LOCATION_TOPIC, Vector3, self.__loc_cbk)
+
+    def init_app2(self):
+        from sys import argv
+        UWGC_TOPIC = f'/{argv[1]}/kinematics/UwGliderCommand'
+        UWGS_TOPIC = f'/{argv[1]}/kinematics/UwGliderStatus'
+        TRUE_POSE_TOPIC = f'/{argv[1]}/ground_truth_to_tf_{argv[1]}/pose'
+        IMU_TOPIC = f'/{argv[1]}/hector_imu'
+        PRESSURE_TOPIC = f'/{argv[1]}/pressure'
+        GPS_TOPIC = f'/{argv[1]}/hector_gps'
+
+        # Communication topics
+        COMMON_TOPIC = "/USBL/common_ping"
+        LOCATION_TOPIC = f"/USBL/transceiver_{self.transceiver_id}/transponder_pose"
+
+        RESP_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
+
+        self.rx = Transponder(self.transponder_id, self.transceiver_id, argv[1])
+
+        #Initialize Publishers
+        self.command_pub = rospy.Publisher(UWGC_TOPIC, UwGliderCommand, queue_size=1)
+ 
+        #Initializee Subscribers
+        rospy.Subscriber(TRUE_POSE_TOPIC, PoseStamped, self.__true_pose_cbk)
+        rospy.Subscriber(UWGS_TOPIC, UwGliderStatus, self.__status_cbk)
+        rospy.Subscriber(PRESSURE_TOPIC, FluidPressure, self.__pressure_cbk)
+        rospy.Subscriber(IMU_TOPIC, Imu, self.__imu_cbk)
+        rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
+        rospy.Subscriber(COMMON_TOPIC, String, self.__comm_cbk)
+        rospy.Subscriber(RESP_TOPIC, USBLResponseSim, self.__resp_cbk)
+        self.loc_sub = rospy.Subscriber(LOCATION_TOPIC, Point, self.__loc_cbk)
 
     def ping_neigbors(self):
         msg_str = json.dumps(INDIVIDUAL_MSG)
@@ -245,6 +285,28 @@ class WaypointFollower():
             hello_pub = rospy.Publisher(NEIGHBOR_TOPIC, String, queue_size=1)
             hello_str = json.dumps(HELLO_MSG)
             hello_pub.publish(hello_str)
+
+    def query_beacons(self):
+        for bid in self.neighbors.keys():
+            time.sleep(1)
+            self.rx.set_tx_channel(bid)
+            self.rx.send_location_request()
+            resp = self.rx.get_response()
+            try:
+                msg_str = resp.data
+                msg_obj = json.loads(msg_str)
+                loc = json_message_converter.convert_json_to_ros_message('geometry_msgs/Point', msg_obj)
+                self.beacon_estimates[bid] = loc
+                print(self.beacon_estimates[bid])
+            except:
+                pass
+
+            #NEIGHBOR_TOPIC = f"/USBL/transceiver_{bid}/command_request"
+            #req_pub = rospy.Publisher(NEIGHBOR_TOPIC, String, queue_size=1)
+            #msg = String()
+            #msg.data = "location"
+            #req_pub.publish(msg)
+
 
     def update_pose_estimate(self, aoa_rad):
         orient = self.imu.orientation
@@ -293,7 +355,7 @@ class WaypointFollower():
         #rospy.loginfo(f"Estimated position: ({e_pos.x}, {e_pos.y}, {e_pos.z})")
         return self.est_pose if not None else PoseStamped()
 
-    def get_path_idx(self, path, vehicle_pose):
+    """def get_path_idx(self, path, vehicle_pose):
         idx = 0
         closest_pt = None                                    # Store closest point for reference
         closest_pt_dist = float("inf")    
@@ -327,12 +389,12 @@ class WaypointFollower():
         yaw_angle = desired_yaw - curr_yaw
         pitch_angle = desired_pitch - curr_pitch
 
-        """# Pitching down
-        if desired_pitch > 0:
-            desired_tank = 0.4
+        # Pitching down
+        #if desired_pitch > 0:
+        #    desired_tank = 0.4
         # Pitching up
-        elif desired_pitch < 0:
-            desired_tank = -0.2"""
+        #elif desired_pitch < 0:
+        #    desired_tank = -0.2
         depth = self.calc_depth()
         offset = 2
         diff = round(0.15*((current_goal.pose.position.z + offset) - depth), 2)
@@ -379,6 +441,7 @@ class WaypointFollower():
         self.cmd.motor_cmd_type = self.motor_mode
         self.cmd.target_motor_cmd = motor_val
         self.command_pub.publish(self.cmd)
+    """
 
     def stop(self):
         self.cmd.header.stamp = rospy.Time.now()
@@ -408,6 +471,7 @@ class WaypointFollower():
     def circle_test(self, start_time):
         curr_time = rospy.Time.now()
         #if curr_time.secs - start_time.secs < 40000: #30
+        self.query_beacons()
         self.circle()
         time.sleep(2)
         #else:
@@ -450,7 +514,7 @@ if __name__ == "__main__":
     from sys import argv
     rospy.init_node(f"{argv[1]}_wnav")
     wf = WaypointFollower()
-    wf.init_app()
+    wf.init_app2()
     try:
         """waypts = "waypoints"
         wf.grapher.add_path(waypts,"Waypoints")

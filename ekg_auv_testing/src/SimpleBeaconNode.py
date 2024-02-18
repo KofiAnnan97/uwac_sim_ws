@@ -12,9 +12,8 @@ from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
 from std_msgs.msg import String
 from rospy_message_converter import message_converter, json_message_converter
-from ekg_auv_testing.msg import bcn_frame_array, bcn_frame, bcn_pose_array, bcn_pose, \
-                                bcn_remote_gps, bcn_status_array, bcn_status, head, \
-                                IverOSI, loc
+
+from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim
 from USBL import Transceiver
 
 SEND_POS_MSG = "data: 'Send Position'"
@@ -23,12 +22,13 @@ class SimpleBeaconNode:
     def __init__(self) -> None:
         self.true_pose = PoseStamped()        
         
-        self.transponder_model = None
-        self.transponder_id = 168
-        self.transceiver_model = None
-        self.transceiver_id = 1
+        #self.transponder_model = None
+        self.transponder_id = "1"
+        #self.transceiver_model = None
+        self.transceiver_id = argv[6]
+        print(self.transceiver_id)
         
-        self.tx = Transceiver(self.transponder_id, self.transponder_model, self.transceiver_id, self.transceiver_model)
+        self.tx = Transceiver(self.transponder_id, self.transceiver_id, argv[1])
         
         self.init_pose = PoseStamped()
         
@@ -78,7 +78,7 @@ class SimpleBeaconNode:
         self.target_pos = PoseStamped()
 
         # Publishers
-        self.move_pub = rospy.Publisher(TWIST_TOPIC, Twist, queue_size=1)
+        self.move_pub = rospy.Publisher(MOVE_TOPIC, Twist, queue_size=1)
         # self.channel_pub = rospy.Publisher(CHANNEL_SWITCH_TOPIC, String, queue_size=1)
         # self.common_pub = rospy.Publisher(COMMON_TOPIC, String, queue_size=30)
         # self.inter_pub = rospy.Publisher(INTERROGATION_TOPIC, String, queue_size=1)  
@@ -106,12 +106,12 @@ class SimpleBeaconNode:
 
     def __target_pos_cbk(self, data):
             if data is not None:
-                print(data)
+                #print(data)
                 self.target_pos.pose.position.x = data.x
                 self.target_pos.pose.position.y = data.y
                 self.target_pos.pose.position.z = data.z
             else:
-                print("None")
+                rospy.loginfo(f"{argv[1]} has not detected transponder yet.")
 
     def __imu_cbk(self, data):
         self.imu = data
@@ -125,6 +125,7 @@ class SimpleBeaconNode:
         except:
             pass
 
+    # Check what transceivers that are set to the same transponder are close
     def __common_cbk(self, data):
         pass
         
@@ -168,7 +169,7 @@ class SimpleBeaconNode:
      # Communication Functions #
      ###########################  
     
-    def switch_to_target(self, transponder_id, loc_pub):
+    """def switch_to_target(self, transponder_id, loc_pub):
         msg = String()
         msg.data = "individual"
         self.inter_pub.publish(msg)
@@ -182,7 +183,14 @@ class SimpleBeaconNode:
     def switch_to_common(self):
         msg = String()
         msg.data = "common"
-        self.inter_pub.publish(msg)
+        self.inter_pub.publish(msg)"""
+
+    def switch_to_target(self, transponder_id):
+        self.tx.set_interrogation_mode("individual")
+        self.tx.switch_channel(transponder_id)
+
+    def switch_to_common(self):
+        self.tx.set_interrogation_mode("common")
 
     def send_target_pos(self, transponder_id):
         loc_pub = rospy.Publisher(f"/USBL/transponder_manufacturer_{transponder_id}/individual_interrogation_ping", String, queue_size=20)
@@ -198,7 +206,7 @@ class SimpleBeaconNode:
             pos_msg.data = str(pos_str)
             loc_pub.publish(pos_msg)
 
-    def send_pose_to_common(self):
+    """def send_pose_to_common(self):
         #rospy.loginfo(f"{self.id}\n{self.curr_pose.pose.position} \n\t{self.last_pose.pose.position}")
         #if self.curr_pose.pose.position != self.last_pose.pose.position:
 
@@ -213,7 +221,18 @@ class SimpleBeaconNode:
         pos_msg.data = str(pos_str)
         self.common_pub.publish(pos_msg) #Causes an error gazebo 
         self.last_pose = self.curr_pose
-        #print(pos_msg.data)
+        #print(pos_msg.data)"""
+
+    def send_pose_to_common(self):
+        self.curr_pose.header.stamp = rospy.Time().now()
+        json_str = json_message_converter.convert_ros_message_to_json(self.curr_pose)
+        pos_msg = String()
+        pos_obj = json.loads(json_str)
+        beacon_id = {"bid":self.transceiver_id}
+        pos_obj.update(beacon_id)
+        pos_str = json.dumps(pos_obj)
+        pos_msg.data = str(pos_str)
+        self.tx.send_msg(pos_msg)
 
     #############
     # Main Code #
