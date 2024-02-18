@@ -26,7 +26,6 @@ class SimpleBeaconNode:
         self.transponder_id = "1"
         #self.transceiver_model = None
         self.transceiver_id = argv[6]
-        print(self.transceiver_id)
         
         self.tx = Transceiver(self.transponder_id, self.transceiver_id, argv[1])
         
@@ -69,6 +68,9 @@ class SimpleBeaconNode:
         INDIVIDUAL_TOPIC = f'/USBL/transponder_manufacturer_{self.id}/individual_interrogation_ping'
         """
 
+        # Communication Topics
+        COMMON_TOPIC = '/USBL/common_ping'
+
         # Sensor Topics
         IMU_TOPIC = f'/{argv[1]}/hector_imu'
         PRESSURE_TOPIC = f'/{argv[1]}/pressure'
@@ -89,7 +91,7 @@ class SimpleBeaconNode:
         rospy.Subscriber(IMU_TOPIC, Imu, self.__imu_cbk)
         rospy.Subscriber(PRESSURE_TOPIC, FluidPressure, self.__pressure_cbk)
         # rospy.Subscriber(TARGET_LOC_TOPIC, Vector3, self.__target_pos_cbk)
-        # rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
+        rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
         # rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
 
     ###################### 
@@ -106,7 +108,6 @@ class SimpleBeaconNode:
 
     def __target_pos_cbk(self, data):
             if data is not None:
-                #print(data)
                 self.target_pos.pose.position.x = data.x
                 self.target_pos.pose.position.y = data.y
                 self.target_pos.pose.position.z = data.z

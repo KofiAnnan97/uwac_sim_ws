@@ -116,7 +116,7 @@ class Transceiver():
     def __rx_loc_cbk(self, data):
         if data is not None:
             self.transponder_location = data
-            rospy.loginfo(f"[Transciever {self.transceiver_id}]: Transponder location at ({data.pose.position.x}, {data.pose.position.y}, {data.pose.position.z})")
+            #rospy.loginfo(f"[Transciever {self.transceiver_id}]: Transponder location at ({data.pose.position.x}, {data.pose.position.y}, {data.pose.position.z})")
 
     def __common_cbk(self, data):
         pass
@@ -153,7 +153,6 @@ class Transceiver():
     def __request_cbk(self, data):
         if data is not None:
             if data.data == "location":
-                #print("REQUEST")
                 self.send_ping()
                 self.send_command_response()
                 

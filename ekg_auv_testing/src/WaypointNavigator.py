@@ -105,15 +105,11 @@ class WaypointFollower():
         # rospy.loginfo(self.status_msg(self.uwg_status))
 
     def __comm_cbk(self, msg):
-        #print(msg)
         if msg is not None:
             msg_str = msg.data
             if msg_str != 'ping':
-                #print(msg_str)
                 msg_obj = json.loads(msg_str)
-                #print(msg_obj)
                 bid = msg_obj["bid"]
-                # print(msg_obj["pose"]["position"])
                 
                 if bid not in self.neighbors.keys():        
                     self.neighbors[bid] = PoseStamped()
@@ -153,7 +149,6 @@ class WaypointFollower():
     def __resp_cbk(self, data):
         if data is not None:
             pass
-            #print(data)
     
     def __get_distance(self,curr_pose, next_pose):
         sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
@@ -295,19 +290,11 @@ class WaypointFollower():
             resp = self.rx.get_response()
             try:
                 msg_str = resp.data
-                msg_obj = json.loads(msg_str)
-                loc = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_obj)
+                loc = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_str)
                 self.beacon_estimates[bid] = loc
-                print(self.beacon_estimates[bid])
-            except:
-                pass
-
-            #NEIGHBOR_TOPIC = f"/USBL/transceiver_{bid}/command_request"
-            #req_pub = rospy.Publisher(NEIGHBOR_TOPIC, String, queue_size=1)
-            #msg = String()
-            #msg.data = "location"
-            #req_pub.publish(msg)
-
+                #print(self.beacon_estimates[bid].pose.position)
+            except Exception as e:
+                print(e)
 
     def update_pose_estimate(self, aoa_rad):
         orient = self.imu.orientation

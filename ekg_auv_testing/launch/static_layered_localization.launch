@@ -47,7 +47,7 @@
     <arg name="z" value="-0.2"/>
   </include>
 
-  <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
+  <!--include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_3"/>
     <arg name="bid" value="3"/>
     <arg name="transceiver_id" value="143"/>
@@ -110,7 +110,7 @@
     <arg name="z" value="-0.2"/>
   </include>
 
-  <!--include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
+  <include file="$(find ekg_auv_testing)/launch/upload_beacon_config.launch">
     <arg name="robot_name" value="beacon_10"/>
     <arg name="bid" value="10"/>
     <arg name="x" value="0"/>
