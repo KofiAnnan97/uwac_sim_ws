@@ -274,7 +274,7 @@ class WaypointFollower():
         rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
         rospy.Subscriber(COMMON_TOPIC, String, self.__comm_cbk)
         rospy.Subscriber(RESP_TOPIC, USBLResponseSim, self.__resp_cbk)
-        self.loc_sub = rospy.Subscriber(LOCATION_TOPIC, Point, self.__loc_cbk)
+        self.loc_sub = rospy.Subscriber(LOCATION_TOPIC, PoseStamped, self.__loc_cbk)
 
     def ping_neigbors(self):
         msg_str = json.dumps(INDIVIDUAL_MSG)
@@ -287,7 +287,8 @@ class WaypointFollower():
             hello_pub.publish(hello_str)
 
     def query_beacons(self):
-        for bid in self.neighbors.keys():
+        temp_dict = self.neighbors.copy()
+        for bid in temp_dict.keys():
             time.sleep(1)
             self.rx.set_tx_channel(bid)
             self.rx.send_location_request()
@@ -295,7 +296,7 @@ class WaypointFollower():
             try:
                 msg_str = resp.data
                 msg_obj = json.loads(msg_str)
-                loc = json_message_converter.convert_json_to_ros_message('geometry_msgs/Point', msg_obj)
+                loc = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_obj)
                 self.beacon_estimates[bid] = loc
                 print(self.beacon_estimates[bid])
             except:

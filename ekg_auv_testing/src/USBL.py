@@ -81,7 +81,7 @@ class Transceiver():
         self.models = ModelStates()
 
         self.common_data = None
-        self.transponder_location = Point()
+        self.transponder_location = PoseStamped()
 
         # Topics
         TRANSPONDER_LOCATION_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/transponder_pose'
@@ -100,14 +100,14 @@ class Transceiver():
         self.channel_pub = rospy.Publisher(CHANNEL_TOPIC, String, queue_size=1)
         self.mode_pub = rospy.Publisher(MODE_TOPIC, String, queue_size=1)
         self.comm_pub = rospy.Publisher(COMMON_TOPIC, String, queue_size=10)
-        self.tx_loc_pub = rospy.Publisher(TRANSPONDER_LOCATION_TOPIC, Point, queue_size=20)
+        self.tx_loc_pub = rospy.Publisher(TRANSPONDER_LOCATION_TOPIC, PoseStamped, queue_size=20)
         self.resp_pub = rospy.Publisher(RESPONSE_TOPIC, USBLResponseSim, queue_size=1)
 
         # ROS Subscribers
         rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
         rospy.Subscriber(CHANNEL_TOPIC, String, self.__channel_cbk)
         rospy.Subscriber(MODE_TOPIC, String, self.__mode_cbk)
-        rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, Point, self.__rx_loc_cbk)
+        rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, PoseStamped, self.__rx_loc_cbk)
         rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
 
 
@@ -116,7 +116,7 @@ class Transceiver():
     def __rx_loc_cbk(self, data):
         if data is not None:
             self.transponder_location = data
-            rospy.loginfo(f"[Transciever {self.transceiver_id}]: Transponder location at ({data.x}, {data.y}, {data.z})")
+            rospy.loginfo(f"[Transciever {self.transceiver_id}]: Transponder location at ({data.pose.position.x}, {data.pose.position.y}, {data.pose.position.z})")
 
     def __common_cbk(self, data):
         pass
@@ -376,12 +376,13 @@ class Transponder():
             # rospy.loginfo(f"Delay time: {delay}")
             time.sleep(delay)
             
-            loc_pub = rospy.Publisher(f'/USBL/transceiver_{self.transceiver_id}/transponder_pose', Point, queue_size=10)
-            tx_loc = Point()
+            loc_pub = rospy.Publisher(f'/USBL/transceiver_{self.transceiver_id}/transponder_pose', PoseStamped, queue_size=10)
+            tx_loc = PoseStamped()
             noise = np.random.normal(self.mu, self.sigma, 3)
-            tx_loc.x = self.rx_pose.pose.position.x + noise[0]
-            tx_loc.y = self.rx_pose.pose.position.y + noise[1]
-            tx_loc.z = self.rx_pose.pose.position.z + noise[2]
+            tx_loc.header.stamp = rospy.Time.now()
+            tx_loc.pose.position.x = self.rx_pose.pose.position.x + noise[0]
+            tx_loc.pose.position.y = self.rx_pose.pose.position.y + noise[1]
+            tx_loc.pose.position.z = self.rx_pose.pose.position.z + noise[2]
             loc_pub.publish(tx_loc)
                     
         except Exception as e:
