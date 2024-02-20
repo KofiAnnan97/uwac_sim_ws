@@ -3,9 +3,10 @@ import json
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Path
 from rospy_message_converter import message_converter, json_message_converter
-from ekg_auv_testing.msg import bcn_frame_array, bcn_frame, bcn_pose_array, bcn_pose, \
-                                bcn_remote_gps, bcn_status_array, bcn_status, head, \
-                                IverOSI, loc
+#from ekg_auv_testing.msg import bcn_frame_array, bcn_frame, bcn_pose_array, bcn_pose, \
+#                               bcn_remote_gps, bcn_status_array, bcn_status, head, \
+#                                IverOSI, loc
+from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim
 
 class StringtoROSmsg:
     def __init__(self):
@@ -49,6 +50,10 @@ class StringtoROSmsg:
             msg = message_converter.convert_dictionary_to_ros_message('ekg_auv_testing/loc', json_obj)
         elif rosmsg_name == 'Path':
             msg = message_converter.convert_dictionary_to_ros_message('nav_msgs/Path', json_obj)
+        elif rosmsg_name == 'USBLRequestSim':
+            msg = message_converter.convert_dictionary_to_ros_message('ekg_auv_testin/USBLRequestSim', json_obj)
+        elif rosmsg_name == 'USBLResponseSim':
+            msg = message_converter.convert_dictionary_to_ros_message('ekg_auv_testin/USBLResponseSim', json_obj)
         return msg
 
 # FOR TESTING 

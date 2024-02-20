@@ -12,7 +12,7 @@ from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
 from std_msgs.msg import String
 from tf.transformations import euler_from_quaternion
 
-from StringtoROSmsg import StringtoROSmsg
+#from StringtoROSmsg import StringtoROSmsg
 from rospy_message_converter import message_converter, json_message_converter
 
 from Graphing3D import Graphing3D
@@ -95,8 +95,9 @@ class WaypointFollower():
         self.time0 = rospy.Time.now()
 
     def __true_pose_cbk(self, data):
-        self.true_pose = data
-        t_pos = self.true_pose.pose.position 
+        if data is not None:
+            self.true_pose = data
+            t_pos = self.true_pose.pose.position 
         #self.grapher.add_path_point(AUV_TRUE_POSE_1, t_pos.x, t_pos.y, t_pos.z)
         #rospy.loginfo(f"True Pose: ({t_pos.x}, {t_pos.y}, {t_pos.z})")
     
@@ -177,26 +178,6 @@ class WaypointFollower():
             # rospy.loginfo(f"Depth Estimate: {self.depth_estimate}, Actual Depth: {self.true_pose.pose.position.z}")
         except:
             return None
-        
-    def get_pose_average(self):
-        x = 0
-        y = 0
-        z = 0
-        for node in self.beacon_estimates:
-            try:
-                x += node.pose.position.x
-                y += node.pose.position.y
-                z += node.pose.position.z
-            except:
-                pass
-        beacon_num = len(self.beacon_estimates)
-        if beacon_num > 0:
-            tmp_pose = PoseStamped()
-            tmp_pose.pose.position.x = x/beacon_num
-            tmp_pose.pose.position.y = y/beacon_num
-            tmp_pose.pose.position.z = z/beacon_num
-            return tmp_pose
-        return None
 
     def status_msg(self, status):
         return f"""
@@ -208,7 +189,7 @@ class WaypointFollower():
         Pump Volume: {status.pumped_volume}
         """
 
-    def init_app(self):
+    """def init_app(self):
         from sys import argv
         UWGC_TOPIC = f'/{argv[1]}/kinematics/UwGliderCommand'
         UWGS_TOPIC = f'/{argv[1]}/kinematics/UwGliderStatus'
@@ -240,8 +221,9 @@ class WaypointFollower():
         rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
         rospy.Subscriber(COMMON_TOPIC, String, self.__comm_cbk)
         rospy.Subscriber(LOCATION_TOPIC, Vector3, self.__loc_cbk)
+        """
 
-    def init_app2(self):
+    def init_app(self):
         from sys import argv
         UWGC_TOPIC = f'/{argv[1]}/kinematics/UwGliderCommand'
         UWGS_TOPIC = f'/{argv[1]}/kinematics/UwGliderStatus'
@@ -271,7 +253,7 @@ class WaypointFollower():
         rospy.Subscriber(RESP_TOPIC, USBLResponseSim, self.__resp_cbk)
         self.loc_sub = rospy.Subscriber(LOCATION_TOPIC, PoseStamped, self.__loc_cbk)
 
-    def ping_neigbors(self):
+    """def ping_neigbors(self):
         msg_str = json.dumps(INDIVIDUAL_MSG)
         self.ch_switch_pub.publish(msg_str)
 
@@ -280,6 +262,7 @@ class WaypointFollower():
             hello_pub = rospy.Publisher(NEIGHBOR_TOPIC, String, queue_size=1)
             hello_str = json.dumps(HELLO_MSG)
             hello_pub.publish(hello_str)
+    """
 
     def query_beacons(self):
         temp_dict = self.neighbors.copy()
@@ -296,6 +279,85 @@ class WaypointFollower():
             except Exception as e:
                 print(e)
 
+    def get_simple_average(self):
+        x = 0
+        y = 0
+        z = 0
+        beacon_num = 0
+        for bid in self.beacon_estimates.keys():
+            try:
+                node = self.beacon_estimates[bid]
+                # rospy.loginfo(f"Beacon {bid}: ({node.pose.position.x}, {node.pose.position.y}, {node.pose.position.z})")
+                x += node.pose.position.x
+                y += node.pose.position.y
+                z += node.pose.position.z
+                beacon_num += 1
+            except:
+                pass
+        if beacon_num > 0:
+            tmp_pose = PoseStamped()
+            tmp_pose.pose.position.x = x/beacon_num
+            tmp_pose.pose.position.y = y/beacon_num
+            tmp_pose.pose.position.z = z/beacon_num
+            return tmp_pose
+        return None
+    
+    def get_weighted_average_by_time(self):
+        x, y, z, weight_num = 0, 0, 0, 0
+        curr_time = rospy.Time.now().to_sec()
+        time_thres = 60
+        for bid in self.beacon_estimates.keys():
+            try:
+                node = self.beacon_estimates[bid]
+                """weight = 1
+                if curr_time - node.header.stamp.to_sec() <= 15:
+                    weight = 9
+                elif curr_time - node.header.stamp.to_sec() <= 30:
+                    weight = 6
+                elif curr_time - node.header.stamp.to_sec() <= 45:
+                    weight = 3
+                elif curr_time - node.header.stamp.to_sec() > 45:
+                    weight = 0"""
+
+                weight = round(9*(15/(curr_time - node.header.stamp.to_sec())), 2)
+                rospy.loginfo(f"Time Delay: {curr_time - node.header.stamp.to_sec()}, Weight: {weight}")
+                rospy.loginfo(f"Beacon {bid}: ({node.pose.position.x}, {node.pose.position.y}, {node.pose.position.z})")
+                x += node.pose.position.x * weight
+                y += node.pose.position.y * weight
+                z += node.pose.position.z * weight
+                weight_num += weight
+            except Exception as e:
+                print(e)
+        if weight_num > 0:
+            tmp_pose = PoseStamped()
+            # Determine how to average time based on similar weighting strategy
+            tmp_pose.pose.position.x = x/weight_num
+            tmp_pose.pose.position.y = y/weight_num
+            tmp_pose.pose.position.z = z/weight_num
+            return tmp_pose
+        return None
+    
+    def get_pose_by_closest_neighbor(self):
+        x, y, z = 0, 0, 0
+        curr_time = rospy.Time.now().to_sec()
+        time_thres = 60
+        closest_dist = float("inf")
+        tmp_pose = None
+        for bid in self.beacon_estimates.keys():
+            try:
+                e_pos = self.beacon_estimates[bid]
+                b_pos = self.neighbors[bid]
+                dist = self.__get_distance(b_pos.pose, e_pos.pose)
+                rospy.loginfo(f"Beacon {bid}: ({e_pos.pose.position.x}, {e_pos.pose.position.y}, {e_pos.pose.position.z})")
+                if dist < closest_dist:
+                    closest_dist = dist
+                    tmp_pose = e_pos
+                
+            except Exception as e:
+                print(e)
+
+        return tmp_pose
+    
     def update_pose_estimate(self, aoa_rad):
         orient = self.imu.orientation
         row, pitch, yaw = euler_from_quaternion([orient.x, orient.y, orient.z, orient.w])
@@ -460,6 +522,14 @@ class WaypointFollower():
         curr_time = rospy.Time.now()
         #if curr_time.secs - start_time.secs < 40000: #30
         self.query_beacons()
+        #avg_pose = self.get_simple_average()
+        #avg_pose = self.get_weighted_average_by_time()
+        avg_pose = self.get_pose_by_closest_neighbor()
+        if avg_pose is not None:
+            rospy.loginfo(f"\t\tAverage Pose: ({avg_pose.pose.position.x}, {avg_pose.pose.position.y}, {avg_pose.pose.position.z})")
+            rospy.loginfo(f"\t\tTrue Pose: ({self.true_pose.pose.position.x}, {self.true_pose.pose.position.y}, {self.true_pose.pose.position.z})")
+        else:
+            rospy.loginfo(avg_pose)
         self.circle()
         time.sleep(2)
         #else:
@@ -502,7 +572,7 @@ if __name__ == "__main__":
     from sys import argv
     rospy.init_node(f"{argv[1]}_wnav")
     wf = WaypointFollower()
-    wf.init_app2()
+    wf.init_app()
     try:
         """waypts = "waypoints"
         wf.grapher.add_path(waypts,"Waypoints")

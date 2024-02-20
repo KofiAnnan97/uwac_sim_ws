@@ -157,11 +157,6 @@ class Transceiver():
                 self.send_command_response()
                 
     # Methods
-    def set_init_pose(self, x, y, z):
-        self.tx_pose.pose.position.x = x 
-        self.tx_pose.pose.position.y = y
-        self.tx_pose.pose.position.z = z 
-
     def send_ping(self):
         msg = String()
         msg.data = 'ping'
@@ -311,11 +306,6 @@ class Transponder():
             self.command_resp = data
     
     # Methods
-    def set_init_pose(self, x, y, z):
-        self.rx_pose.pose.position.x = x 
-        self.rx_pose.pose.position.y = y
-        self.rx_pose.pose.position.z = z   
-    
     def __dist_between_points(self, start_pose, end_pose):
         x1 = start_pose.position.x
         y1 = start_pose.position.y

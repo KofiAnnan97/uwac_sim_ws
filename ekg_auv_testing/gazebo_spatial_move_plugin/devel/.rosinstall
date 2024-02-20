@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/ekg_unix/GitHub/research/simulation/uuv_ws/src/ekg_auv_testing/gazebo_spatial_move_plugin/devel/setup.sh

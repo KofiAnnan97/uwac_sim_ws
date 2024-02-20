@@ -16,7 +16,7 @@ from rospy_message_converter import message_converter, json_message_converter
 from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim
 from USBL import Transceiver
 
-SEND_POS_MSG = "data: 'Send Position'"
+SEND_POS_MSG = "location"
 
 class SimpleBeaconNode:
     def __init__(self) -> None:
@@ -40,6 +40,8 @@ class SimpleBeaconNode:
         self.water_pressure = FluidPressure()
         self.imu = Imu()
         self.gps = NavSatFix()
+
+        self.neighbors = dict()
 
         self.id = argv[2]
 
@@ -127,8 +129,23 @@ class SimpleBeaconNode:
             pass
 
     # Check what transceivers that are set to the same transponder are close
-    def __common_cbk(self, data):
-        pass
+    def __common_cbk(self, msg):
+        if msg is not None:
+            msg_str = msg.data
+            if msg_str != 'ping':
+                msg_obj = json.loads(msg_str)
+                bid = msg_obj["bid"]
+                
+                if bid not in self.neighbors.keys():        
+                    self.neighbors[bid] = PoseStamped()
+            
+                del msg_obj["bid"]
+                msg_str = json.dumps(msg_obj) 
+                try:
+                    pos_msg = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_str)
+                    self.neighbors[bid] = pos_msg #strm.rosmsg_from_str(msg_str)
+                except:
+                    pass
         
     ##############################
     # Movement/Sensors Functions #
@@ -150,7 +167,7 @@ class SimpleBeaconNode:
         Kp = 0.5
         curr_depth = self.get_depth()
         err = desired_depth - curr_depth
-        z = -(Kp * err)
+        z = (Kp * err) if z <= 1 else 1
 
         cmd_msg = Twist()
         cmd_msg.linear.z = z
@@ -244,7 +261,11 @@ class SimpleBeaconNode:
         self.switch_to_common()
         while not rospy.is_shutdown():
             self.send_pose_to_common()
+            twist = Twist()
+            twist.linear.x = -0.2
+            twist.linear.y = 0.2
             # self.layer_agent()
+            self.move_pub.publish(twist)
             self.rate.sleep()     
 
 if __name__ == "__main__":

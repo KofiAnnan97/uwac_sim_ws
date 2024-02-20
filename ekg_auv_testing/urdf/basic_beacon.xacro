@@ -60,7 +60,7 @@
                 <sound_speed>1540.0</sound_speed>
                 <ping_freq>2</ping_freq>
             </plugin-->
-            <plugin name="${namespace}_control" filename="libekg_spatial_move.so">
+            <plugin name="${namespace}_control" filename="libgazebo_spatial_move.so">
                 <robotNamespace>${namespace}</robotNamespace>
                 <commandTopic>cmd_vel</commandTopic>
                 <odometryTopic>${namespace}/pose_gt</odometryTopic>
