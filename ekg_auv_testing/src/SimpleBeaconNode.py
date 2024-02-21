@@ -261,12 +261,12 @@ class SimpleBeaconNode:
         self.switch_to_common()
         while not rospy.is_shutdown():
             self.send_pose_to_common()
-            twist = Twist()
+            """twist = Twist()
             twist.linear.x = -0.2
             twist.linear.y = 0.2
             # self.layer_agent()
             self.move_pub.publish(twist)
-            self.rate.sleep()     
+            self.rate.sleep()"""     
 
 if __name__ == "__main__":
     rospy.init_node("simple_node", anonymous=True)

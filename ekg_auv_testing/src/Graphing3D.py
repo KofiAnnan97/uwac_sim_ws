@@ -10,8 +10,9 @@ class XYZPath:
         self.label = None
 
     def add_point(self, x, y, z):
-        pt = (x, y, z)
-        self.path.append(pt)
+        if x != None and y != None and z != None:
+            pt = (x, y, z)
+            self.path.append(pt)
 
     def set_label(self, label_str):
         self.label = label_str
@@ -37,13 +38,19 @@ class XYZPath:
         else:
             return None
         
+    def to_str(self):
+        for pt in self.path:
+            print(f"({pt[0]}, {pt[1]}, {pt[2]})")
+        
 class XYZTimePath:
     def __init__(self):
         self.path = list()
         self.label = None
     def add_point(self, x, y, z, time):
-        pt = (x, y, z, time)
-        self.path.append(pt)
+        if x != None and y != None and z != None and time != None:
+            pt = (x, y, z, time)
+            self.path.append(pt)
+        #print(f"({x}, {y}, {z}, {time})")
 
     def set_label(self, label_str):
         self.label = label_str
@@ -74,7 +81,10 @@ class XYZTimePath:
             return list(map(lambda pt: pt[3], self.path))
         else:
             return None
-    
+        
+    def to_str(self):
+        for pt in self.path:
+            print(f"({pt[0]}, {pt[1]}, {pt[2]}, {pt[3]})")
         
 class PerformanceMetrics:
     def __init__(self):
@@ -124,7 +134,7 @@ class Graphing3D:
         pkg_path = rospack.get_path("ekg_auv_testing")
         graphs_path = os.path.join(pkg_path, "graphs")
         dir_path = os.path.join(graphs_path, dir_name)
-        print(dir_path)
+        # print(dir_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         timestamp = datetime.now().isoformat('_', timespec='seconds')
@@ -136,7 +146,7 @@ class Graphing3D:
     def show_plot(self, title_name):
         fig = plt.figure()
         ax = plt.axes(projection='3d')
-        plt.title(title_name)
+        plt.title(f"{title_name} Visual")
         #ax.set_autoscale_on = True
 
         ax.set_xlabel('X')
@@ -144,10 +154,13 @@ class Graphing3D:
         ax.set_zlabel('Depth')
 
         for path_name in self.paths:
+            #print(path_name)
             path = self.paths[path_name]
+            #path.to_str()
             x = path.get_x_pts()
             y = path.get_y_pts()
             z = path.get_z_pts()
+            #print("graph")
             ax.plot(x, y, z, label=path.get_label())
         
         ax.set_autoscalex_on = True
@@ -178,14 +191,14 @@ class Graphing3D:
 
             plt.legend()
             #plt.show()
-            self.save_plot(title_name, "perforamce")
+            self.save_plot(title_name, "performance")
         except:
             print("Time data not given.")
 
 """
 ###########
 # TESTING #
-##########
+###########
 if __name__ == "__main__":
     try:
         xyz = XYZTimePath()
