@@ -423,8 +423,8 @@ class WaypointFollower():
         #    self.est_pose = self.init_pose
         #else:
         self.est_pose.header.stamp = rospy.Time.now()
-        self.est_pose.pose.position.x += d_x #/math.sin(yaw*2.0*math.pi/360)
-        self.est_pose.pose.position.y += d_y #/math.cos(yaw*2.0*math.pi/360)
+        self.est_pose.pose.position.x -= d_x #/math.sin(yaw*2.0*math.pi/360)
+        self.est_pose.pose.position.y -= d_y #/math.cos(yaw*2.0*math.pi/360)
         self.est_pose.pose.position.z = depth
 
         e_pos = self.est_pose.pose.position
@@ -554,7 +554,7 @@ class WaypointFollower():
 
     def circle_test(self, start_time):
         curr_time = rospy.Time.now()
-        if curr_time.secs - start_time.secs < 120:
+        if curr_time.secs - start_time.secs < 360:
             self.query_beacons()
             est_pose1 = self.get_simple_average()
             if est_pose1 is not None:

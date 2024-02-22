@@ -144,6 +144,7 @@ class Graphing3D:
         plt.savefig(os.path.join(dir_path, f'{timestamp}_{new_title}.png'))
 
     def show_plot(self, title_name):
+        paths_copy = self.paths.copy()
         fig = plt.figure()
         ax = plt.axes(projection='3d')
         plt.title(f"{title_name} Visual")
@@ -153,14 +154,11 @@ class Graphing3D:
         ax.set_ylabel('Y')
         ax.set_zlabel('Depth')
 
-        for path_name in self.paths:
-            #print(path_name)
-            path = self.paths[path_name]
-            #path.to_str()
+        for path_name in paths_copy:
+            path = paths_copy[path_name]
             x = path.get_x_pts()
             y = path.get_y_pts()
             z = path.get_z_pts()
-            #print("graph")
             ax.plot(x, y, z, label=path.get_label())
         
         ax.set_autoscalex_on = True
@@ -179,8 +177,8 @@ class Graphing3D:
             axs[2].set_ylabel('Z')
             axs[2].set_xlabel('Time')
 
-            for path_name in self.paths:
-                path = self.paths[path_name]
+            for path_name in paths_copy:
+                path = paths_copy[path_name]
                 x = path.get_x_pts()
                 y = path.get_y_pts()
                 z = path.get_z_pts()

@@ -5,7 +5,7 @@
 build/
 
 # Python
-__pycache__/*git 
+__pycache__/
 
 # Graphs
 graphs/
