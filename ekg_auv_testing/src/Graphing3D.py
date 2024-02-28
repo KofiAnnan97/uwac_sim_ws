@@ -3,6 +3,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+import csv
 
 class XYZPath:
     def __init__(self):
@@ -50,7 +51,6 @@ class XYZTimePath:
         if x != None and y != None and z != None and time != None:
             pt = (x, y, z, time)
             self.path.append(pt)
-        #print(f"({x}, {y}, {z}, {time})")
 
     def set_label(self, label_str):
         self.label = label_str
@@ -83,8 +83,11 @@ class XYZTimePath:
             return None
         
     def to_str(self):
-        for pt in self.path:
-            print(f"({pt[0]}, {pt[1]}, {pt[2]}, {pt[3]})")
+        if len(self.path) > 0:
+            for pt in self.path:
+                print(f"({pt[0]}, {pt[1]}, {pt[2]}, {pt[3]})")
+        else:
+            print("Empty")
         
 class PerformanceMetrics:
     def __init__(self):
@@ -102,6 +105,10 @@ class Graphing3D:
     def __init__(self, include_time = False):
         self.paths = dict()
         self.time_flag = include_time
+
+    ################################
+    # System Memory Implementation #
+    ################################
 
     def add_path(self, key, label_str):
         if self.time_flag == False:
@@ -134,7 +141,6 @@ class Graphing3D:
         pkg_path = rospack.get_path("ekg_auv_testing")
         graphs_path = os.path.join(pkg_path, "graphs")
         dir_path = os.path.join(graphs_path, dir_name)
-        # print(dir_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         timestamp = datetime.now().isoformat('_', timespec='seconds')
@@ -159,6 +165,7 @@ class Graphing3D:
             x = path.get_x_pts()
             y = path.get_y_pts()
             z = path.get_z_pts()
+            #print(f"{path_name}\nX: {x}, \nY: {y}, \nZ: {z}\nLabel: {path.get_label()}\n")
             ax.plot(x, y, z, label=path.get_label())
         
         ax.set_autoscalex_on = True
@@ -193,21 +200,82 @@ class Graphing3D:
         except:
             print("Time data not given.")
 
-"""
+    #############################
+    # File-based Implementation #
+    #############################
+
+    def get_log_path(self):        
+        import os
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path("ekg_auv_testing")
+        logs_path = os.path.join(pkg_path, "logs")
+        return logs_path
+
+    def init_paths(self, labels):
+        from datetime import datetime
+        import os
+        logs_path = self.get_log_path()
+
+        timestamp = datetime.now().isoformat('_', timespec='seconds')
+
+        for label in labels:
+            import re
+            label = re.sub(r'\s+', '_', label)
+            label_path = os.path.join(logs_path, label)
+            if not os.path.exists(label_path):
+                os.makedirs(label_path)
+            file_name = f'{timestamp}_{label}.csv'
+            file_path = os.path.join(label_path, file_name)
+            with open(file_path, 'w', newline='') as cf:
+                cf.write("timestamp, x, y, z\n")
+        return timestamp 
+
+    def graph_data_from_csv(self, paths, timestamp, title):
+        logs_path = self.get_log_path()
+        for path_name in paths:
+            import re
+            path_name = re.sub(r'\s+', '_', path_name)
+            import os
+            path_path = os.path.join(logs_path, path_name)
+            file_name = f'{timestamp}_{path_name}.csv'
+            file_path = os.path.join(path_path, file_name)
+
+            self.add_path(path_name, path_name)
+
+            with open(file_path, 'r') as cr:
+                reader = csv.reader(cr)
+                for row in reader:
+                    try:
+                        self.add_path_point(path_name, round(float(row[1]), 2), round(float(row[2]), 2), round(float(row[3]), 2), float(row[0]))
+                    except:
+                        pass
+
+        self.show_plot(title)
+
+
+    def send_data_to_csv(self, path_name, timestamp, x, y, z, time):
+        import csv
+        import os
+        logs_path = self.get_log_path()
+
+        import re
+        path_name = re.sub(r'\s+', '_', path_name)
+        file_name = f'{timestamp}_{path_name}.csv'
+        path_path = os.path.join(logs_path, path_name)
+        file_path = os.path.join(path_path, file_name)
+
+        with open(file_path, 'a', newline='\n') as cf:
+            cf.write(f"{time}, {x}, {y}, {z}\n")
+
+
 ###########
 # TESTING #
 ###########
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     try:
-        xyz = XYZTimePath()
-        xyz.add_point(2,3,1, 0)
-        xyz.add_point(4,8,0, 1)
-        xyz.add_point(6,3,2, 2)
-        xyz.add_point(8,0,4, 3)
-        xyz.add_point(3,1,1, 4)
-        t = xyz.get_time_pts()
-        print(t)
-        
+        ########
+        # Data #
+        ########
         time_flag = True
         g3d = Graphing3D(time_flag)
 
@@ -235,8 +303,9 @@ if __name__ == "__main__":
         x4 = r4*np.sin(theta)
         y4 = r4*np.cos(theta)
 
-        # for i in range(len(x)):
-        #    g3d.add_coord_pt(x[i], y[i], z[i])
+        #################################
+        # General Functionality Testing #
+        #################################
         time = 0
         path_str = "test_1"
         g3d.add_path(path_str, "Test Label 1")
@@ -252,7 +321,6 @@ if __name__ == "__main__":
             for i in range(len(x2)):
                 g3d.add_path_point(path_str, x2[i], y2[i], z2[i], time)
                 time += 1
-        #print(g3d.paths[path_name].path)
 
         time = 0
         path_str = "test_3"
@@ -261,7 +329,6 @@ if __name__ == "__main__":
             for i in range(len(x3)):
                 g3d.add_path_point(path_str, x3[i], y3[i], z3[i], time)
                 time += 1
-        #print(g3d.paths[path_name].path)
 
         time = 0
         path_str = "test_4"
@@ -270,8 +337,36 @@ if __name__ == "__main__":
             for i in range(len(x4)):
                 g3d.add_path_point(path_str, x4[i], y4[i], z4[i], time)
                 time += 1
-        #print(g3d.paths[path_name].path)
+
         g3d.show_plot("Testing 3D Lines")
+                
+        ####################
+        # CSV File Testing #
+        ####################
+        labels = ["Label 1", "Label 2", "Label 3", "Label 4"]
+        stamp = g3d.init_paths(labels)
+
+        time = 0
+        for i in range(len(x)):
+            g3d.send_data_to_csv(labels[0], stamp, x[i], y[i], z[i], time)
+            time += 1 
+
+        time = 0
+        for i in range(len(x2)):
+            g3d.send_data_to_csv(labels[1], stamp, x2[i], y2[i], z2[i], time)
+            time += 1
+
+        time = 0
+        for i in range(len(x3)):
+            g3d.send_data_to_csv(labels[2], stamp, x3[i], y3[i], z3[i], time)
+            time += 1
+
+        time = 0
+        for i in range(len(x4)):
+            g3d.send_data_to_csv(labels[3], stamp, x4[i], y4[i], z4[i], time)
+            time += 1
+
+        g3d.graph_data_from_csv(labels, stamp, "Testing 3D Lines")
 
     except Exception as e:
         print(e)
