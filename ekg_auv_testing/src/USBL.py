@@ -230,7 +230,7 @@ class Transponder():
         self.command_resp = USBLResponseSim()
 
         self.mu = 0
-        self.sigma = 0
+        self.sigma = 0.9
 
         # Topics
         COMMON_TOPIC = '/USBL/common_ping'

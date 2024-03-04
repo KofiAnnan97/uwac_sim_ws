@@ -97,14 +97,75 @@ class XYZTimePath:
 class PerformanceMetrics:
     def __init__(self):
         pass
-    def __get_distance(self,curr_pose, next_pose):
-        sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
-                         math.pow(curr_pose.position.y - next_pose.position.y, 2) + \
-                         math.pow(curr_pose.position.z - next_pose.position.z, 2)
+
+    # Calculate pose between two poses
+    def calc_distance(self, ytrue, ymeas):
+        sum_of_squares = math.pow(ymeas[0] - ytrue[0], 2) + \
+                         math.pow(ymeas[1] - ytrue[1]) + \
+                         math.pow(ymeas[2] - ytrue[2], 2)
         dist = math.sqrt(math.fabs(sum_of_squares))
         return dist
-    def calculate_mse(self, estimate, true):
-        pass
+        
+    # Calculate Accuracy
+    def calc_acc(self, true_val, meas_val):
+        try:
+            return 100 - self.calc_err_rate(true_val, meas_val)
+        except:
+            return None
+    
+    # Calculate Error Rate
+    def calc_err_rate(self, true_val, meas_val):
+        try:
+            return 100*(math.fabs(meas_val - true_val)/true_val)
+        except:
+            return None
+        
+    ###################################
+    # Absolute Trajectory Error (ATE) #
+    ################################### 
+
+    # Looking into how to implement this properly. 
+
+    ##################################
+    # Relative Pose Estimation (RPE) #
+    ##################################
+
+    # RPE Root Square Mean Error
+    def calc_rpe_rmse(self, ytrue, ymeas):
+        try:
+            sum = 0
+            for i in range(len(ymeas)):
+                sum += math.pow(self.calc_distance(ytrue[i], ymeas[i]), 2)
+            sum /= len(ymeas)
+            return math.sqrt(sum)
+        except:
+            return None
+        
+    # RPE Mean (Error Difference)
+    def calc_rpe_mean(self, ytrue, ymeas):
+        mu = 0
+        for i in range(len(ymeas)):
+            mu += self.calc_distance(ytrue[i], ymeas[i])
+        mu /= len(ymeas)
+        return mu
+
+    # RPE Standard Deviation (Error Difference)
+    def calc_rpe_sd(self, mu, ymeas):
+        std = 0
+        for i in range(len(ymeas)):
+            std += math.pow((ymeas[i] - mu), 2)
+        std /= len(ymeas)
+        return math.sqrt(std)
+    
+    def print_metrics(self, ytrue, ymeas, title):
+        rmse = self.calc_rpe_rmse(ytrue, ymeas)
+        mu = self.calc_rpe_mean(ytrue, ymeas)
+        sd = self.calc_rpe_sd(mu, ymeas)
+        print(f"""
+              {title} (RPE Translational)
+              ------------------------
+              RMSE: {rmse}, Mean: {mu}, Standard Deviation: {sd}
+              """)
 
 class Graphing3D:
     def __init__(self, include_time = False):
@@ -152,6 +213,7 @@ class Graphing3D:
         plt.savefig(os.path.join(dir_path, f'{timestamp}_{new_title}.png'))
 
     def show_plot(self, title_name):
+        print("Preparing data for graph visualization")
         paths_copy = self.paths.copy()
         fig = plt.figure()
         ax = plt.axes(projection='3d')
@@ -262,8 +324,24 @@ class Graphing3D:
 ###########
 # TESTING #
 ###########
-"""if __name__ == "__main__":
-    try:
+if __name__ == "__main__":
+    AUV_TRUE_POSE_1 = "true_pose"
+    AUV_EST_POSE_1 = "dead_reckoing"
+    AUV_BEACON_POSE_1 = "avg"
+    AUV_BEACON_POSE_2 = "weighted_avg"
+    AUV_BEACON_POSE_3 = "closest_neighbor"
+    AUV_FUSION_POSE_1 = "avg_with_dead_reckoning"
+    AUV_FUSION_POSE_2 = "weighted_avg_with_dead_reckoning"
+    AUV_FUSION_POSE_3 = "closest_neighbor_with_dead_reckoning"
+    labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_1, AUV_BEACON_POSE_2, AUV_BEACON_POSE_3]
+    
+    
+    time_flag = True
+    g3d = Graphing3D(time_flag)
+    timestamp = "2024-03-04_00:42:54"
+    g3d.graph_data_from_csv(labels, timestamp, "Helical Glide Test")
+
+    """try:
         ########
         # Data #
         ########
