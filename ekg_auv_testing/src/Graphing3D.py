@@ -101,7 +101,7 @@ class PerformanceMetrics:
     # Calculate pose between two poses
     def calc_distance(self, ytrue, ymeas):
         sum_of_squares = math.pow(ymeas[0] - ytrue[0], 2) + \
-                         math.pow(ymeas[1] - ytrue[1]) + \
+                         math.pow(ymeas[1] - ytrue[1], 2) + \
                          math.pow(ymeas[2] - ytrue[2], 2)
         dist = math.sqrt(math.fabs(sum_of_squares))
         return dist
@@ -120,6 +120,12 @@ class PerformanceMetrics:
         except:
             return None
         
+    def get_index_by_time(self, timestamp, start_idx, poses):
+        for i in range(start_idx, len(poses)):
+            if poses[i][3] == timestamp:
+                #print(f"Stamp: {timestamp}, Pose: {poses[i]}")
+                return i
+        return -1
     ###################################
     # Absolute Trajectory Error (ATE) #
     ################################### 
@@ -134,38 +140,53 @@ class PerformanceMetrics:
     def calc_rpe_rmse(self, ytrue, ymeas):
         try:
             sum = 0
-            for i in range(len(ymeas)):
-                sum += math.pow(self.calc_distance(ytrue[i], ymeas[i]), 2)
-            sum /= len(ymeas)
+            count = 0
+            try:
+                for i in range(len(ymeas)):
+                    j = self.get_index_by_time(ymeas[i][3], i, ytrue)
+                    sum += math.pow(self.calc_distance(ytrue[j], ymeas[i]), 2)
+                    count += 1
+            except:
+                pass
+            sum /= count
             return math.sqrt(sum)
         except:
             return None
         
-    # RPE Mean (Error Difference)
+    # RPE Mean (Pose Difference)
     def calc_rpe_mean(self, ytrue, ymeas):
         mu = 0
-        for i in range(len(ymeas)):
-            mu += self.calc_distance(ytrue[i], ymeas[i])
-        mu /= len(ymeas)
+        count = 0
+        try:
+            for i in range(len(ymeas)):
+                j = self.get_index_by_time(ymeas[i][3], i, ytrue)
+                mu += self.calc_distance(ytrue[j], ymeas[i])
+                count +=1
+        except:
+            pass
+        mu /= count
         return mu
 
-    # RPE Standard Deviation (Error Difference)
-    def calc_rpe_sd(self, mu, ymeas):
+    # RPE Standard Deviation (Pose Difference)
+    def calc_rpe_sd(self, mu, ytrue, ymeas):
         std = 0
-        for i in range(len(ymeas)):
-            std += math.pow((ymeas[i] - mu), 2)
-        std /= len(ymeas)
+        count = 0
+        try:
+            for i in range(len(ymeas)):
+                j = self.get_index_by_time(ymeas[i][3], i, ytrue)
+                dist = self.calc_distance(ytrue[j], ymeas[i])
+                std += math.pow((dist - mu), 2)
+                count += 1
+        except:
+            pass
+        std /= (count-1)
         return math.sqrt(std)
     
     def print_metrics(self, ytrue, ymeas, title):
         rmse = self.calc_rpe_rmse(ytrue, ymeas)
         mu = self.calc_rpe_mean(ytrue, ymeas)
-        sd = self.calc_rpe_sd(mu, ymeas)
-        print(f"""
-              {title} (RPE Translational)
-              ------------------------
-              RMSE: {rmse}, Mean: {mu}, Standard Deviation: {sd}
-              """)
+        sd = self.calc_rpe_sd(mu, ytrue, ymeas)
+        return (rmse, mu, sd)
 
 class Graphing3D:
     def __init__(self, include_time = False):
@@ -199,7 +220,7 @@ class Graphing3D:
             if path_name in self.paths.keys():
                 self.paths[path_name].add_point(x, y, z, time)
 
-    def save_plot(self, title, dir_name):
+    def save_plot(self, title, dir_name, timestamp = None):
         from datetime import datetime
         rospack = rospkg.RosPack()
         pkg_path = rospack.get_path("ekg_auv_testing")
@@ -207,12 +228,12 @@ class Graphing3D:
         dir_path = os.path.join(graphs_path, dir_name)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
-        timestamp = datetime.now().isoformat('_', timespec='seconds')
-        
+        if timestamp is None:
+            timestamp = datetime.now().isoformat('_', timespec='seconds')
         new_title = re.sub(r'\s+', '_', title)
         plt.savefig(os.path.join(dir_path, f'{timestamp}_{new_title}.png'))
 
-    def show_plot(self, title_name):
+    def show_plot(self, title_name, stamp = None):
         print("Preparing data for graph visualization")
         paths_copy = self.paths.copy()
         fig = plt.figure()
@@ -237,7 +258,10 @@ class Graphing3D:
 
         plt.legend()
         #plt.show()
-        self.save_plot(title_name, "visual")
+        if stamp is None:
+            self.save_plot(title_name, "visual")
+        else:
+            self.save_plot(title_name, "visual", stamp)
 
         try:
             fig, axs = plt.subplots(3, 1)
@@ -260,9 +284,27 @@ class Graphing3D:
 
             plt.legend()
             #plt.show()
-            self.save_plot(title_name, "performance")
+            if stamp is None:
+                self.save_plot(title_name, "performance")
+            else:
+                self.save_plot(title_name, "performance", stamp)
         except:
             print("Time data not given.")
+
+    def show_table(self, title, timestamp, rows, cols, data):
+        fig, ax = plt.subplots()
+        fig.patch.set_visible(False)
+        ax.axis('off')
+        ax.axis('tight')
+
+        table = ax.table(cellText=data, colLabels=cols, rowLabels=rows, loc='center')
+        table.scale(1, 1.5)
+        plt.suptitle(title, size=20)
+        plt.figtext(0.95, 0.05, timestamp, horizontalalignment='right', size=10, weight='light')
+
+        fig.tight_layout()
+        self.save_plot(title, "metrics", timestamp)
+        #plt.show()
 
     #############################
     # File-based Implementation #
@@ -293,6 +335,10 @@ class Graphing3D:
         return timestamp 
 
     def graph_data_from_csv(self, labels, timestamp, title):
+        self.get_data_from_csv(labels, timestamp)
+        self.show_plot(title, timestamp)
+
+    def get_data_from_csv(self, labels, timestamp):
         logs_path = self.get_log_path()
         for label in labels:
             path_name = re.sub(r'\s+', '_', label).lower()
@@ -308,7 +354,6 @@ class Graphing3D:
                         self.add_path_point(path_name, round(float(row[1]), 2), round(float(row[2]), 2), round(float(row[3]), 2), float(row[0]))
                     except:
                         pass
-        self.show_plot(title)
 
     def send_data_to_csv(self, label, timestamp, x, y, z, time):
         logs_path = self.get_log_path()
@@ -324,7 +369,7 @@ class Graphing3D:
 ###########
 # TESTING #
 ###########
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     AUV_TRUE_POSE_1 = "true_pose"
     AUV_EST_POSE_1 = "dead_reckoing"
     AUV_BEACON_POSE_1 = "avg"
@@ -341,7 +386,7 @@ if __name__ == "__main__":
     timestamp = "2024-03-04_00:42:54"
     g3d.graph_data_from_csv(labels, timestamp, "Helical Glide Test")
 
-    """try:
+    try:
         ########
         # Data #
         ########
