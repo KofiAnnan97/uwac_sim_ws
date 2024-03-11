@@ -136,7 +136,7 @@ class PerformanceMetrics:
     # Relative Pose Estimation (RPE) #
     ##################################
 
-    # RPE Root Square Mean Error
+    # RPE Root Square Mean Error (Pose Difference)
     def calc_rpe_rmse(self, ytrue, ymeas):
         try:
             sum = 0
@@ -149,7 +149,7 @@ class PerformanceMetrics:
             except:
                 pass
             sum /= count
-            return math.sqrt(sum)
+            return round(math.sqrt(sum), 4)
         except:
             return None
         
@@ -165,7 +165,7 @@ class PerformanceMetrics:
         except:
             pass
         mu /= count
-        return mu
+        return round(mu, 4)
 
     # RPE Standard Deviation (Pose Difference)
     def calc_rpe_sd(self, mu, ytrue, ymeas):
@@ -179,13 +179,82 @@ class PerformanceMetrics:
                 count += 1
         except:
             pass
-        std /= (count-1)
-        return math.sqrt(std)
+        std /= count
+        return round(math.sqrt(std), 4)
     
-    def print_metrics(self, ytrue, ymeas, title):
+    def get_pose_diff_metrics(self, ytrue, ymeas, title):
         rmse = self.calc_rpe_rmse(ytrue, ymeas)
         mu = self.calc_rpe_mean(ytrue, ymeas)
         sd = self.calc_rpe_sd(mu, ytrue, ymeas)
+        return (rmse, mu, sd)
+    
+    # RPE Root Square Mean Error (Single Value)
+    def calc_rpe_rmse2(self, ytrue, ymeas, val_type):
+        try:
+            sum = 0
+            count = 0
+            try:
+                for i in range(len(ymeas)):
+                    j = self.get_index_by_time(ymeas[i][3], i, ytrue)
+                    if val_type == "x":
+                        c_idx = 0
+                    elif val_type == "y":
+                        c_idx = 1
+                    elif val_type == "z":
+                        c_idx = 2
+                    sum += math.pow(math.fabs(ytrue[j][c_idx] - ymeas[i][c_idx]), 2)
+                    count += 1
+            except:
+                pass
+            sum /= count
+            return round(math.sqrt(sum), 2)
+        except:
+            return None
+        
+    # RPE Mean (Single Value)
+    def calc_rpe_mean2(self, ytrue, ymeas,val_type):
+        mu = 0
+        count = 0
+        try:
+            for i in range(len(ymeas)):
+                j = self.get_index_by_time(ymeas[i][3], i, ytrue)
+                if val_type == "x":
+                    c_idx = 0
+                elif val_type == "y":
+                    c_idx = 1
+                elif val_type == "z":
+                    c_idx = 2
+                mu += math.fabs(ytrue[j][c_idx]- ymeas[i][c_idx])
+                count +=1
+        except:
+            pass
+        mu /= count
+        return round(mu, 4)
+
+    # RPE Standard Deviation (Single Value)    
+    def calc_rpe_sd2(self, mu, ytrue, ymeas, val_type):
+        std = 0
+        count = 0
+        try:
+            for i in range(len(ymeas)):
+                j = self.get_index_by_time(ymeas[i][3], i, ytrue)
+                if val_type == "x":
+                    c_idx = 0
+                elif val_type == "y":
+                    c_idx = 1
+                elif val_type == "z":
+                    c_idx = 2
+                std += math.pow((ytrue[j][c_idx] -ymeas[i][c_idx]) - mu, 2)
+                count += 1
+        except:
+            pass
+        std /= count
+        return round(math.sqrt(std), 4)
+
+    def get_single_val_metrics(self, ytrue, ymeas, val_type):
+        rmse = self.calc_rpe_rmse2(ytrue, ymeas, val_type)
+        mu = self.calc_rpe_mean2(ytrue, ymeas, val_type)
+        sd = self.calc_rpe_sd2(mu, ytrue, ymeas, val_type)
         return (rmse, mu, sd)
 
 class Graphing3D:
@@ -291,17 +360,19 @@ class Graphing3D:
         except:
             print("Time data not given.")
 
-    def show_table(self, title, timestamp, rows, cols, data):
-        fig, ax = plt.subplots()
+    def show_table(self, title, timestamp, rows, cols, collection, order):
+        fig, axs = plt.subplots(len(collection),1)
         fig.patch.set_visible(False)
-        ax.axis('off')
-        ax.axis('tight')
 
-        table = ax.table(cellText=data, colLabels=cols, rowLabels=rows, loc='center')
-        table.scale(1, 1.5)
-        plt.suptitle(title, size=20)
+        for i in range(len(collection)):
+            axs[i].axis('off')
+            axs[i].axis('tight')
+            table = axs[i].table(cellText=collection[i], colLabels=cols, rowLabels=rows, loc='center')
+            table.scale(1, 1.5)
+            axs[i].set_title(order[i], loc='left')
+
+        plt.suptitle(title, size= 15)
         plt.figtext(0.95, 0.05, timestamp, horizontalalignment='right', size=10, weight='light')
-
         fig.tight_layout()
         self.save_plot(title, "metrics", timestamp)
         #plt.show()
