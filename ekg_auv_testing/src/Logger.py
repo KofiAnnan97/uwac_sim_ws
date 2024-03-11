@@ -7,6 +7,8 @@ from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import Imu
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
+from ekg_auv_testing.msg import VehicleLog
+
 class GliderLogger:
     def __init__(self, glider_name, stamp, glider_topic):
         # Variables
@@ -16,22 +18,21 @@ class GliderLogger:
         self.file_path = None
         self.curr_idx = 0
 
-        IMU_TOPIC = f'/{glider_name}/hector_imu'
-
-        print(glider_topic)
+        #print(glider_topic)
         # Subscribers
-        rospy.Subscriber(glider_topic, PoseStamped, self.__glider_cbk)
-        rospy.Subscriber(IMU_TOPIC, Imu, self.__imu_cbk)
+        rospy.Subscriber(glider_topic, VehicleLog, self.__log_cbk)
 
-    def __glider_cbk(self, msg):
+    def __log_cbk(self, msg):
         try:
             if self.is_running == True:
-                pos = msg.pose.position
-                orient = msg.pose.orientation
+                pos = msg.position
+                orient = msg.orientation
+                ang_vel = msg.angular_velocity
+                lin_acc = msg.linear_acceleration
                 (roll, pitch, yaw) = euler_from_quaternion([orient.x, orient.y, orient.z, orient.w])
                 with open(self.file_path,'a', newline='') as cw:
                     writer = csv.writer(cw)
-                    writer.writerow([msg.header.stamp.secs, round(pos.x, 2),  round(pos.y, 2), round(pos.z, 2), round(roll, 2), round(pitch, 2), round(yaw, 2)])
+                    writer.writerow([msg.header.stamp.secs, round(pos.x, 2),  round(pos.y, 2), round(pos.z, 2), lin_acc.x, lin_acc.y, lin_acc.z, ang_vel.x, ang_vel.y, ang_vel.z, round(roll, 2), round(pitch, 2), round(yaw, 2)])
                     self.curr_idx += 1
         except Exception as e:
             print(e)
@@ -56,18 +57,20 @@ class GliderLogger:
 
         with open(file_path, 'w', newline='') as cw:
             writer = csv.writer(cw)
-            writer.writerow(["timestamp", "x", "y", "z", "roll", "pitch", "yaw"])
+            writer.writerow(["timestamp", "x", "y", "z", "lin_acc_x", "lin_acc_y", "lin_acc_z", "ang_vel_x", "ang_vel_y", "ang_vel_z", "roll", "pitch", "yaw"])
 
         self.is_running = True
 
-    def retrieve_data_by_time(self, stamp):
+    def retrieve_data_by_time(self, b_stamp, e_stamp):
         pose_log = []
         with open(self.file_path, 'r') as cr:
             reader = csv.reader(cr)
             for row in reversed(list(reader)):
-                if row[0].secs <= stamp:
+                if row[0] == "timestamp":
                     return pose_log
-                else: 
+                elif int(row[0]) <= b_stamp:
+                    return pose_log
+                elif int(row[0]) > b_stamp and int(row[0]) <= e_stamp: 
                     pose_log.insert(0, row)
 
 class BeaconLogger:
