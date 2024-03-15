@@ -29,47 +29,6 @@ CHANNELS_IDS = {
 }
 
 class Transceiver():
-    """def __init__(self, transponder_id, transponder_model, transceiver_id, transceiver_model): 
-        self.transponder_id = transponder_id
-        self.transceiver_id = transceiver_id
-        self.mode = INTERROGATION_MODE[0]
-        self.transceiver_model = transceiver_model
-        self.transponder_model = transponder_model
-        self.tx_pose = PoseStamped()
-
-        self.models = ModelStates()
-
-        self.common_data = None
-        self.transponder_location = Point()
-
-        # Topics
-        TRANSPONDER_LOCATION_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/transponder_pose'
-        CHANNEL_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/channel_switch'
-        MODE_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/mode'
-        COMMON_TOPIC = '/USBL/common_ping'
-
-        RESPONSE_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/command_request'
-        REQUEST_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
-
-        # Gazebo Subscribers
-        #rospy.Subscriber(GAZEBO_GET_MODEL_STATE_TOPIC, ModelStates, self.__model_cbk)
-        rospy.Subscriber(GAZEBO_MODEL_STATES_TOPIC, ModelStates, self.__models_cbk)
-
-        # ROS Publishers
-        self.channel_pub = rospy.Publisher(CHANNEL_TOPIC, String, queue_size=1)
-        self.mode_pub = rospy.Publisher(MODE_TOPIC, String, queue_size=1)
-        self.comm_pub = rospy.Publisher(COMMON_TOPIC, String, queue_size=10)
-        self.tx_loc_pub = rospy.Publisher(TRANSPONDER_LOCATION_TOPIC, Point, queue_size=20)
-        self.resp_pub = rospy.Publisher(RESPONSE_TOPIC, USBLResponseSim, queue_size=1)
-
-        # ROS Subscribers
-        rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
-        rospy.Subscriber(CHANNEL_TOPIC, String, self.__channel_cbk)
-        rospy.Subscriber(MODE_TOPIC, String, self.__mode_cbk)
-        rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, Point, self.__rx_loc_cbk)
-        # self.requests = rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
-        """
-
     def __init__(self, transponder_id, transceiver_id, model): 
         self.transponder_id = transponder_id
         self.transceiver_id = transceiver_id
@@ -125,15 +84,6 @@ class Transceiver():
         if data is not None:
             self.models = data
             self.tx_pose.pose = self.get_model_pos(self.transceiver_model)
-
-    """def __model_cbk(self, data):
-        try:
-            print(data)
-            if data.model_name == self.transponder_model:
-                self.tx_pose.pose = data.pose
-                self.tx_pose.header = data.header
-        except rospy.ServiceException as e:
-           pass"""
 
     def __channel_cbk(self, data):
         msg = data
@@ -230,7 +180,7 @@ class Transponder():
         self.command_resp = USBLResponseSim()
 
         self.mu = 0
-        self.sigma = 0.9
+        self.sigma = 2
 
         # Topics
         COMMON_TOPIC = '/USBL/common_ping'
@@ -249,38 +199,6 @@ class Transponder():
         rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
         rospy.Subscriber(INDIVIDUAL_TOPIC, String, self.__individual_cbk)
         rospy.Subscriber(RESPONSE_TOPIC, USBLResponseSim, self.__resp_cbk)
-
-    """def __init__(self, transponder_id, transponder_model, transceiver_id, transceiver_model): 
-        self.transponder_id = transponder_id
-        self.transceiver_id = transceiver_id
-        self.transceiver_model = transceiver_model
-        self.transponder_model = transponder_model
-        self.rx_pose = PoseStamped()
-
-        self.models = ModelStates()
-
-        self.command_resp = USBLResponseSim()
-
-        self.mu = 0
-        self.sigma = 0
-
-        # Topics
-        COMMON_TOPIC = '/USBL/common_ping'
-        INDIVIDUAL_TOPIC = f'/USBL/transponder_{self.transponder_id}/ping'
-        REQUEST_TOPIC = f'/USBL/transponder_{self.transceiver_id}/command_request'
-        RESPONSE_TOPIC = f'/USBL/transceiver_{self.transponder_id}/command_response'
-
-        # Gazebo Subscribers
-        rospy.Subscriber(GAZEBO_MODEL_STATES_TOPIC, ModelStates, self.__models_cbk)
-
-        # ROS Publishers
-        #self.loc_pub = rospy.Publisher(self.TRANSPONDER_LOCATION_TOPIC, Point, queue_size=10)
-        self.request_pub = rospy.Publisher(REQUEST_TOPIC, USBLRequestSim, queue_size=1)
-
-        # ROS Subscribers
-        rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
-        rospy.Subscriber(INDIVIDUAL_TOPIC, String, self.__individual_cbk)
-    """
 
     def __common_cbk(self, data):
         msg = data
@@ -348,27 +266,22 @@ class Transponder():
     # FIX: MAKE SURE THAT THE MODEL IS ACTUALLY GRABS THE TRANSCEIVER MODEL LOCATION 
     def query_location(self):
         try:
-            """ models = rospy.ServiceProxy(GAZEBO_MODEL_STATES_TOPIC, ModelStates)
-            resp = models(self.transceiver_model, self.transceiver_model)
-            rospy.loginfo(resp)
-            
-            tx_pose.header = resp.header
-            tx_pose.pose = resp.pose"""
-           
+            start_time = rospy.Time.now()
             tx_pose = PoseStamped()
             tx_pose.pose = self.get_model_pos(self.transceiver_model)
 
             dist = self.__dist_between_points(self.rx_pose.pose, tx_pose.pose)
             # rospy.loginfo(f"Calculated distance: {dist}")
             sound_propagation_speed = SPEED_OF_SOUND + self.rx_pose.pose.position.z/1000 * 17
-            delay = dist/sound_propagation_speed
-            # rospy.loginfo(f"Delay time: {delay}")
+            delay = (dist/sound_propagation_speed)*1
+            #rospy.loginfo(f"Delay time: {delay}")
             time.sleep(delay)
             
             loc_pub = rospy.Publisher(f'/USBL/transceiver_{self.transceiver_id}/transponder_pose', PoseStamped, queue_size=10)
             tx_loc = PoseStamped()
             noise = np.random.normal(self.mu, self.sigma, 3)
-            tx_loc.header.stamp = rospy.Time.now()
+            tx_loc.header.stamp = rospy.Time.now() # start_time + rospy.Duration(delay)
+            #rospy.loginfo(f"{self.transceiver_id} || Time: {tx_loc.header.stamp.secs}")
             tx_loc.pose.position.x = self.rx_pose.pose.position.x + noise[0]
             tx_loc.pose.position.y = self.rx_pose.pose.position.y + noise[1]
             tx_loc.pose.position.z = self.rx_pose.pose.position.z + noise[2]
