@@ -130,14 +130,8 @@ class PerformanceMetrics:
     # Absolute Trajectory Error (ATE) #
     ################################### 
 
-    # Looking into how to implement this properly. 
-
-    ##################################
-    # Relative Pose Estimation (RPE) #
-    ##################################
-
     # RPE Root Square Mean Error (Pose Difference)
-    def calc_rpe_rmse(self, ytrue, ymeas):
+    def calc_ate_rmse(self, ytrue, ymeas):
         try:
             sum = 0
             count = 0
@@ -154,7 +148,7 @@ class PerformanceMetrics:
             return None
         
     # RPE Mean (Pose Difference)
-    def calc_rpe_mean(self, ytrue, ymeas):
+    def calc_ate_mean(self, ytrue, ymeas):
         mu = 0
         count = 0
         try:
@@ -168,7 +162,7 @@ class PerformanceMetrics:
         return round(mu, 4)
 
     # RPE Standard Deviation (Pose Difference)
-    def calc_rpe_sd(self, mu, ytrue, ymeas):
+    def calc_ate_sd(self, mu, ytrue, ymeas):
         std = 0
         count = 0
         try:
@@ -183,13 +177,13 @@ class PerformanceMetrics:
         return round(math.sqrt(std), 4)
     
     def get_pose_diff_metrics(self, ytrue, ymeas, title):
-        rmse = self.calc_rpe_rmse(ytrue, ymeas)
-        mu = self.calc_rpe_mean(ytrue, ymeas)
-        sd = self.calc_rpe_sd(mu, ytrue, ymeas)
+        rmse = self.calc_ate_rmse(ytrue, ymeas)
+        mu = self.calc_ate_mean(ytrue, ymeas)
+        sd = self.calc_ate_sd(mu, ytrue, ymeas)
         return (rmse, mu, sd)
     
-    # RPE Root Square Mean Error (Single Value)
-    def calc_rpe_rmse2(self, ytrue, ymeas, val_type):
+    # ATE Root Square Mean Error (Single Value)
+    def calc_ate_rmse2(self, ytrue, ymeas, val_type):
         try:
             sum = 0
             count = 0
@@ -211,8 +205,8 @@ class PerformanceMetrics:
         except:
             return None
         
-    # RPE Mean (Single Value)
-    def calc_rpe_mean2(self, ytrue, ymeas,val_type):
+    # ATE Mean (Single Value)
+    def calc_ate_mean2(self, ytrue, ymeas,val_type):
         mu = 0
         count = 0
         try:
@@ -231,8 +225,8 @@ class PerformanceMetrics:
         mu /= count
         return round(mu, 4)
 
-    # RPE Standard Deviation (Single Value)    
-    def calc_rpe_sd2(self, mu, ytrue, ymeas, val_type):
+    # ATE Standard Deviation (Single Value)    
+    def calc_ate_sd2(self, mu, ytrue, ymeas, val_type):
         std = 0
         count = 0
         try:
@@ -252,10 +246,16 @@ class PerformanceMetrics:
         return round(math.sqrt(std), 4)
 
     def get_single_val_metrics(self, ytrue, ymeas, val_type):
-        rmse = self.calc_rpe_rmse2(ytrue, ymeas, val_type)
-        mu = self.calc_rpe_mean2(ytrue, ymeas, val_type)
-        sd = self.calc_rpe_sd2(mu, ytrue, ymeas, val_type)
+        rmse = self.calc_ate_rmse2(ytrue, ymeas, val_type)
+        mu = self.calc_ate_mean2(ytrue, ymeas, val_type)
+        sd = self.calc_ate_sd2(mu, ytrue, ymeas, val_type)
         return (rmse, mu, sd)
+    
+    #############################
+    # Relative Pose Error (RPE) #
+    #############################
+
+    # Looking into how to implement this properly (https://arxiv.org/pdf/1910.04755.pdf)
 
 class Graphing3D:
     def __init__(self, include_time = False):
@@ -303,7 +303,7 @@ class Graphing3D:
         plt.savefig(os.path.join(dir_path, f'{timestamp}_{new_title}.png'))
 
     def show_plot(self, title_name, stamp = None):
-        print("Preparing data for graph visualization")
+        print("Preparing graph visualization...")
         paths_copy = self.paths.copy()
         fig = plt.figure()
         ax = plt.axes(projection='3d')
@@ -361,6 +361,7 @@ class Graphing3D:
             print("Time data not given.")
 
     def show_table(self, title, timestamp, rows, cols, collection, order):
+        print("Preparing performance metrics...")
         fig, axs = plt.subplots(len(collection),1)
         fig.patch.set_visible(False)
 
@@ -436,122 +437,3 @@ class Graphing3D:
         with open(file_path, 'a', newline='') as cw:
             writer = csv.writer(cw)
             writer.writerow([time, x, y, z])
-
-###########
-# TESTING #
-###########
-"""if __name__ == "__main__":
-    AUV_TRUE_POSE_1 = "true_pose"
-    AUV_EST_POSE_1 = "dead_reckoing"
-    AUV_BEACON_POSE_1 = "avg"
-    AUV_BEACON_POSE_2 = "weighted_avg"
-    AUV_BEACON_POSE_3 = "closest_neighbor"
-    AUV_FUSION_POSE_1 = "avg_with_dead_reckoning"
-    AUV_FUSION_POSE_2 = "weighted_avg_with_dead_reckoning"
-    AUV_FUSION_POSE_3 = "closest_neighbor_with_dead_reckoning"
-    labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_1, AUV_BEACON_POSE_2, AUV_BEACON_POSE_3]
-    
-    
-    time_flag = True
-    g3d = Graphing3D(time_flag)
-    timestamp = "2024-03-04_00:42:54"
-    g3d.graph_data_from_csv(labels, timestamp, "Helical Glide Test")
-
-    try:
-        ########
-        # Data #
-        ########
-        time_flag = True
-        g3d = Graphing3D(time_flag)
-
-        theta = np.linspace(-3*np.pi, 3*np.pi, 100)
-        z =np.linspace(-9, 0, 100)
-        r = z**2 +1
-        x = r*np.sin(theta)
-        y = r*np.cos(theta)
-
-        theta2 = np.linspace(-5*np.pi, 5*np.pi, 100)
-        z2 =np.linspace(-6, 0, 100)
-        r2 = z2**2 +1
-        x2 = r2*np.sin(theta)
-        y2 = r2*np.cos(theta)
-
-        theta3 = np.linspace(-7*np.pi, 7*np.pi, 100)
-        z3 =np.linspace(-4, 0, 100)
-        r3 = z3**2 +1
-        x3 = r3*np.sin(theta)
-        y3 = r3*np.cos(theta)
-
-        theta4 = np.linspace(-9*np.pi, 9*np.pi, 100)
-        z4 =np.linspace(-11, 0, 100)
-        r4 = z4**2 +1
-        x4 = r4*np.sin(theta)
-        y4 = r4*np.cos(theta)
-
-        #################################
-        # General Functionality Testing #
-        #################################
-        #time = 0
-        #path_str = "test_1"
-        #g3d.add_path(path_str, "Test Label 1")
-        #for path_name in g3d.paths:
-        #    for i in range(len(x)):
-        #        g3d.add_path_point(path_str, x[i], y[i], z[i], time)
-        #        time += 1 
-
-        #time = 0
-        #path_str = "test_2"
-        #g3d.add_path(path_str, "Test Label 2")
-        #for path_name in g3d.paths:
-        #    for i in range(len(x2)):
-        #        g3d.add_path_point(path_str, x2[i], y2[i], z2[i], time)
-        #        time += 1
-
-        #time = 0
-        #path_str = "test_3"
-        #g3d.add_path(path_str, "Test Label 3")
-        #for path_name in g3d.paths:
-        #    for i in range(len(x3)):
-        #        g3d.add_path_point(path_str, x3[i], y3[i], z3[i], time)
-        #        time += 1
-
-        #time = 0
-        #path_str = "test_4"
-        #g3d.add_path(path_str, "Test Label 4")
-        #for path_name in g3d.paths:
-        #    for i in range(len(x4)):
-        #        g3d.add_path_point(path_str, x4[i], y4[i], z4[i], time)
-        #        time += 1
-
-        #g3d.show_plot("Testing 3D Lines")
-                
-        ####################
-        # CSV File Testing #
-        ####################
-        labels = ["Label 1", "Test 2", "Sample 3", "Example 4"]
-        stamp = g3d.init_paths(labels)
-
-        time = 0
-        for i in range(len(x)):
-            g3d.send_data_to_csv(labels[0], stamp, x[i], y[i], z[i], time)
-            time += 1 
-
-        time = 0
-        for i in range(len(x2)):
-            g3d.send_data_to_csv(labels[1], stamp, x2[i], y2[i], z2[i], time)
-            time += 1
-
-        time = 0
-        for i in range(len(x3)):
-            g3d.send_data_to_csv(labels[2], stamp, x3[i], y3[i], z3[i], time)
-            time += 1
-
-        time = 0
-        for i in range(len(x4)):
-            g3d.send_data_to_csv(labels[3], stamp, x4[i], y4[i], z4[i], time)
-            time += 1
-
-        g3d.graph_data_from_csv(labels, stamp, "Testing 3D Lines")
-
-    except Exception as e:
-        print(e)"""
