@@ -1,4 +1,0 @@
-int32 transceiverID
-int32 responseID
-string transceiverModelName
-string data

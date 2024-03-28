@@ -6,6 +6,8 @@ build/
 
 # Python
 __pycache__/
+ekg_auv_testing/src/__pycache__/
 
-# Graphs
+# Data and Visualization
 graphs/
+ekg_auv_testing/logs/

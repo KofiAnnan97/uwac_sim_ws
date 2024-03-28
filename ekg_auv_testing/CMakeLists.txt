@@ -25,6 +25,8 @@ add_message_files(
    USBLRequestSim.msg
    USBLResponseSim.msg
    VehicleLog.msg
+   VehiclePose.msg
+   VehiclePoses.msg
 )
 
 generate_messages(
