@@ -7,7 +7,10 @@ from Graphing3D import PerformanceMetrics, Graphing3D
 labels = ["true_pose", "dead_reckoning", "weighted_avg", "weighted_avg_with_dead_reckoning"]
 #labels = ["true_pose","wavg_15","wavg_10","wavg_5","wavg_30"]
 
-default_filename = "Helical Glide Test"
+ls = "Localization Strats"
+wt = "WADR Testing"
+
+default_filename = wt
 #timestamp = "2024-03-14_23:29:08"
 
 
@@ -48,7 +51,7 @@ def main():
     order = ["Position", "X", "Y", "Z"]
 
     cols = ('RSME', 'Mean', 'Standard Deviation')
-    g3d.show_table(f"Relative Pose Estimation", timestamp, labels[1:], cols, collection, order)
+    g3d.show_table(f"{title} ATE", timestamp, labels[1:], cols, collection, order)
     g3d.show_plot(title, timestamp)
     print("Complete")
 
