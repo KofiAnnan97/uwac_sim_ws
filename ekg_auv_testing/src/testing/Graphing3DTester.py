@@ -1,8 +1,22 @@
-from ekg_auv_testing.src import Graphing3D
 import numpy as np
+import importlib.machinery
+import importlib.util
+import rospkg
+import os
+
+rospack = rospkg.RosPack()
+pkg_path = rospack.get_path("ekg_auv_testing")
+src_path = os.path.join(pkg_path, "src")
+graphing_path = os.path.join(src_path, 'Graphing3D.py')
+
+loader = importlib.machinery.SourceFileLoader('Graphing3D', graphing_path)
+spec = importlib.util.spec_from_loader('Graphing3D', loader)
+Graphing3D = importlib.util.module_from_spec(spec)
+print(Graphing3D)
+loader.exec_module(Graphing3D)
 
 AUV_TRUE_POSE_1 = "true_pose"
-AUV_EST_POSE_1 = "dead_reckoing"
+AUV_EST_POSE_1 = "dead_reckoning"
 AUV_BEACON_POSE_1 = "avg"
 AUV_BEACON_POSE_2 = "weighted_avg"
 AUV_BEACON_POSE_3 = "closest_neighbor"
@@ -12,17 +26,21 @@ AUV_FUSION_POSE_3 = "closest_neighbor_with_dead_reckoning"
 labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_1, AUV_BEACON_POSE_2, AUV_BEACON_POSE_3]
     
     
-time_flag = True
-g3d = Graphing3D(time_flag)
-timestamp = "2024-03-04_00:42:54"
-g3d.graph_data_from_csv(labels, timestamp, "Helical Glide Test")
+##################
+# From CSV Files #
+##################
+
+"""time_flag = True
+g3d = Graphing3D.Graphing3D(time_flag)
+timestamp = "2024-03-28_17:08:14"
+g3d.graph_data_from_csv(labels, timestamp, "Helical Glide Test")"""
 
 try:
     ########
     # Data #
     ########
     time_flag = True
-    g3d = Graphing3D(time_flag)
+    g3d = Graphing3D.Graphing3D(time_flag)
 
     theta = np.linspace(-3*np.pi, 3*np.pi, 100)
     z =np.linspace(-9, 0, 100)
