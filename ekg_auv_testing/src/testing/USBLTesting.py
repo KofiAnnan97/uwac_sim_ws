@@ -6,13 +6,14 @@ import numpy as np
 
 import rospy
 from std_msgs.msg import String
-from geometry_msgs.msg import Point, PoseStamped
+from geometry_msgs.msg import PoseStamped
 from gazebo_msgs.msg import ModelStates
-from gazebo_msgs.srv import GetModelState
 
 from rospy_message_converter import message_converter, json_message_converter
 
-from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim, VehiclePose, VehiclePoses
+from seatrac_pkg.msg import bcn_frame_array, bcn_frame
+
+from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim, VehiclePose, VehiclePoses, Packet, Payload
 
 INTERROGATION_MODE = ['common', 'individual']
 
@@ -20,13 +21,6 @@ GAZEBO_GET_MODEL_STATE_TOPIC = 'gazebo/get_model_state'
 GAZEBO_MODEL_STATES_TOPIC = 'gazebo/model_states'
 
 SPEED_OF_SOUND = 1540                                     # speed of sound underwater
-
-# Channel Index
-CHANNELS_IDS = {
-    "1": "glider_1",
-    "168": "beacon_1",
-    "169": "beacon_2"
-}
 
 class Transceiver():
     def __init__(self, transponder_id, transceiver_id, model): 
@@ -42,6 +36,8 @@ class Transceiver():
         self.common_data = None
         self.transponder_location = VehiclePose()
         self.tx_locs = dict()
+
+        self.rate = rospy.Rate(10)
 
         # Topics
         TRANSPONDER_LOCATION_TOPIC = f'/USBL/transceiver_{self.transceiver_id}/transponder_pose'
@@ -70,9 +66,7 @@ class Transceiver():
         rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, VehiclePose, self.__rx_loc_cbk)
         rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
 
-
     # Callback Functions
-
     def __rx_loc_cbk(self, data):
         if data is not None:
             self.transponder_location = data
@@ -115,6 +109,17 @@ class Transceiver():
                 self.send_command_response(msg)
                 
     # Methods
+    def process_data(self, msg):
+        if msg is not None:
+            try:
+                msg_type = msg.rosmsg_type
+                msg_str = msg.data
+                rosmsg = json_message_converter.convert_json_to_ros_message(msg_type, msg_str)
+                return rosmsg
+            except Exception as e:
+                print(e)
+                return None
+
     def send_ping(self):
         msg = String()
         msg.data = 'ping'
@@ -177,6 +182,10 @@ class Transceiver():
             individual_pub = rospy.Publisher(f'/USBL/transponder_{self.transponder_id}/ping', String, queue_size=1)
             individual_pub.publish(msg)
 
+    def run(self):
+        while not rospy.is_shutdown():
+            self.rate.sleep()
+
 
 
 class Transponder():
@@ -194,9 +203,12 @@ class Transponder():
         self.mu = 0
         self.sigma = 2
 
+        self.rate = rospy.Rate(10)
+
         # Topics
         COMMON_TOPIC = '/USBL/common_ping'
         INDIVIDUAL_TOPIC = f'/USBL/transponder_{self.transponder_id}/ping'
+        SWITCH_TOPIC = f'/USBL/transponder_{self.transponder_id}/channel_switch'
         RESPONSE_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
         REQUEST_TOPIC= f'/USBL/transceiver_{self.transceiver_id}/command_request'
 
@@ -211,6 +223,7 @@ class Transponder():
         rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
         rospy.Subscriber(INDIVIDUAL_TOPIC, String, self.__individual_cbk)
         rospy.Subscriber(RESPONSE_TOPIC, USBLResponseSim, self.__resp_cbk)
+        rospy.Subscriber(SWITCH_TOPIC, String, self.__channel_cbk)
 
     def __common_cbk(self, msg):
         if msg is not None:
@@ -222,6 +235,10 @@ class Transponder():
         if msg.data == 'ping':
             # rospy.loginfo(f'Pinging {self.transponder_id}')
             self.query_location()
+
+    def __channel_cbk(self, msg):
+        if msg is not None:
+            self.set_tx_channel(msg.data)
 
     def __models_cbk(self, data):
         if data is not None:
@@ -306,10 +323,13 @@ class Transponder():
             print(f"Query Func: {e}")
             # rospy.loginfo("Could not find location")
 
+    def run(self):
+        while not rospy.is_shutdown():
+            self.rate.sleep()
+
 ###########
 # TESTING #
 ###########
-
 # Testing Multi-Transponder communciation 
 def test_1(tx1):
     tx1.set_interrogation_mode("common")
@@ -336,8 +356,23 @@ def test_2(tx1, tx2, rx1):
 
 if __name__ == "__main__":
     rospy.init_node("usbl_comm_testing", anonymous=True)
+    bcn_type = rospy.get_param('~beacon_type')
+    model_name = rospy.get_param('~model_name')
+    comm_id = rospy.get_param('~comm_id')
+    tx_id = rospy.get_param('~tx_id')
+    rx_id = rospy.get_param('~rx_id')
+    comm = None
 
-    rx_id1 = "1"
+    try:
+        if bcn_type == 'X150':
+            comm = Transceiver(rx_id, comm_id, model_name)
+        elif bcn_type == 'X110':
+            comm = Transponder(comm_id, tx_id, model_name)
+        comm.run()
+    except rospy.ROSInterruptException:
+        pass
+
+    """rx_id1 = "1"
     rx_id2 = "2"
     rx_model1 = "sphere1"
     rx_model2 = "sphere2"
@@ -353,9 +388,4 @@ if __name__ == "__main__":
     rx2 = Transponder(rx_id2, tx_id1, rx_model2)
     
     rx1.mu = 0.2
-    rx1.sigma = 0.07
-
-    while not rospy.is_shutdown():
-        #test_1(tx1)
-        #test_2(tx1, tx2, rx1)
-        rospy.Rate(10).sleep()
+    rx1.sigma = 0.07"""
