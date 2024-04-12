@@ -8,26 +8,28 @@ find_package(catkin REQUIRED COMPONENTS
    sensor_msgs
    geometry_msgs
    message_generation
+#   seatrac_pkg
 )
 
 add_message_files(
    FILES
-   #bcn_frame.msg
-   #bcn_frame_array.msg
-   #bcn_pose.msg
-   #bcn_pose_array.msg
-   #bcn_status.msg
-   #bcn_status_array.msg
-   #bcn_remote_gps.msg
-   #loc.msg
-   #IverOSI.msg
-   #head.msg
    USBLRequestSim.msg
    USBLResponseSim.msg
    VehicleLog.msg
    VehiclePose.msg
    VehiclePoses.msg
+   Packet.msg 
+   Payload.msg
 )
+
+#include_directories(include ${catkin_INCLUDE_DIRS})
+#add_library(
+#   seatrac_pkg
+#   src/MessagesTypes.py 
+#   src/CommHandler.py 
+#   src/CsvLogger.py
+#)
+#target_link_libraries(seatrac_pkg ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
 
 generate_messages(
    DEPENDENCIES
@@ -45,8 +47,13 @@ catkin_package(
    message_runtime
 )
 
-include_directories(
-# include
-   ${catkin_INCLUDE_DIRS}
-)
-
+#install(
+#  TARGETS seatrac_pkg
+#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+#)
+#install(
+#  DIRECTORY include/${PROJECT_NAME}/
+#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#)
