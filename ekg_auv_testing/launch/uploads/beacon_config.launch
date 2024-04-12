@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot_name" default="basic_beacon"/>
-  <arg name="bid" default="-1"/>
-  <arg name="transceiver_id" default="168"/>
+  <arg name="rx_id" default="-1"/>
+  <arg name="tx_id" default="-1"/>
+  <arg name="transceiver_id" default="-1"/>
+  <arg name="beacon_type" default="X110"/>
   <arg name="debug" default="0" doc="Sets the DEBUG flag for the uuv_simulator's plugins for verbose mode"/>
   <arg name="use_geodetic" default="false"/>
   <arg name="init_pose" default="-x 0 -y 0 -z -1 -Y 3.14"/>
@@ -25,7 +27,7 @@
                 debug:=$(arg debug)
                 namespace:=$(arg namespace)
                 transceiver_id:=$(arg transceiver_id)
-                transponder_id:=$(arg bid)
+                transponder_id:=$(arg rx_id)
                 inertial_reference_frame:=world_ned"/>
     </group>
 
@@ -35,7 +37,7 @@
                 debug:=$(arg debug)
                 namespace:=$(arg namespace)
                 transceiver_id:=$(arg transceiver_id)
-                transponder_id:=$(arg bid)
+                transponder_id:=$(arg rx_id)
                 inertial_reference_frame:=world"/>
     </group>
 
@@ -67,12 +69,16 @@
     <arg name="child_frame_id" value="/$(arg namespace)/base_link"/> 
   </include>
 
-  <node 
-    pkg="ekg_auv_testing" 
-    name="$(arg namespace)" 
-    type="SimpleBeaconNode.py" 
-    output="screen" 
-    args="$(arg namespace) $(arg bid) $(arg x) $(arg y) $(arg z) $(arg transceiver_id)"
+  <include file="$(find ekg_auv_testing)/launch/comm.launch">
+    <arg name="namespace" value="$(arg robot_name)"/>
+    <arg name="beacon_type" value="$(arg beacon_type)"/>
+    <arg name="comm_id" value="$(arg transceiver_id)"/>
+    <arg name="rx_id" value="$(arg rx_id)"/>
+    <arg name="tx_id" value="$(arg tx_id)"/>
+  </include>
+  
+  <node pkg="ekg_auv_testing" name="$(arg namespace)" type="SimpleBeaconNodeV2.py" output="screen" 
+    args="$(arg namespace) $(arg rx_id) $(arg x) $(arg y) $(arg z) $(arg transceiver_id)"
   />
 
 </launch>

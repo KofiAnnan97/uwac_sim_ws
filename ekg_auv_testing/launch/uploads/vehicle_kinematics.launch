@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot_name" default="vechicle"/>
+  <arg name="rx_id" default="-1"/>
+  <arg name="tx_id" default="-1"/>
   <arg name="transponder_id" default="1"/>
+  <arg name="beacon_type" default="X110"/>
   <arg name="debug" default="0" doc="Sets the DEBUG flag for the uuv_simulator's plugins for verbose mode"/>
   <arg name="use_geodetic" default="false"/>
   <arg name="init_pose" default="-x 0 -y 0 -z -1 -Y 3.14" />
@@ -67,6 +70,14 @@
     <arg name="namespace" value="$(arg namespace)"/>
     <arg name="world_frame" value="world"/>
     <arg name="child_frame_id" value="/$(arg namespace)/base_link"/>
+  </include>
+
+  <include file="$(find ekg_auv_testing)/launch/comm.launch">
+    <arg name="namespace" value="$(arg robot_name)"/>
+    <arg name="beacon_type" value="$(arg beacon_type)"/>
+    <arg name="comm_id" value="$(arg transponder_id)"/>
+    <arg name="rx_id" value="$(arg rx_id)"/>
+    <arg name="tx_id" value="$(arg tx_id)"/>
   </include>
 
   <!-- Glider Navigation -->
