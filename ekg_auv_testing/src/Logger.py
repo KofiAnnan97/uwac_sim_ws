@@ -45,17 +45,28 @@ class GliderLogger:
         pkg_path = rospack.get_path("ekg_auv_testing")
         logs_path = os.path.join(pkg_path, "logs")
         return logs_path
+    
+    def set_glider_log(self, glider_name, stamp):
+        logs_path = self.get_log_path()
+        glider_path = os.path.join(logs_path, glider_name)
+        if not os.path.exists(glider_path):
+            os.makedirs(glider_path)
+        file_name = f'{stamp}_{glider_name}.csv'
+        file_path = os.path.join(glider_path, file_name)
+        self.file_path = file_path
+
 
     def start(self):
-        logs_path = self.get_log_path()
+        """logs_path = self.get_log_path()
         glider_path = os.path.join(logs_path, self.glider_name)
         if not os.path.exists(glider_path):
             os.makedirs(glider_path)
         file_name = f'{self.timestamp}_{self.glider_name}.csv'
         file_path = os.path.join(glider_path, file_name)
-        self.file_path = file_path
+        self.file_path = file_path"""
+        self.set_glider_log(self.glider_name, self.timestamp)
 
-        with open(file_path, 'w', newline='') as cw:
+        with open(self.file_path, 'w', newline='') as cw:
             writer = csv.writer(cw)
             writer.writerow(["timestamp", "x", "y", "z", "lin_acc_x", "lin_acc_y", "lin_acc_z", "ang_vel_x", "ang_vel_y", "ang_vel_z", "roll", "pitch", "yaw"])
 
