@@ -1,0 +1,2 @@
+string bid
+string data
