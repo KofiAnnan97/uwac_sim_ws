@@ -11,7 +11,7 @@ from gazebo_msgs.msg import ModelStates
 
 from rospy_message_converter import message_converter, json_message_converter
 
-from seatrac_pkg.msg import bcn_frame_array, bcn_frame
+from seatrac_pkg.msg import bcn_frame_array, bcn_frame, bcn_pose_array, bcn_pose, bcn_status_array, bcn_status, bcn_remote_gps, head, loc
 
 from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim, VehiclePose, VehiclePoses, Packet, Payload
 
@@ -55,16 +55,20 @@ class Transceiver():
         # ROS Publishers
         self.channel_pub = rospy.Publisher(CHANNEL_TOPIC, String, queue_size=1)
         self.mode_pub = rospy.Publisher(MODE_TOPIC, String, queue_size=1)
-        self.comm_pub = rospy.Publisher(COMMON_TOPIC, String, queue_size=10)
+        #self.comm_pub = rospy.Publisher(COMMON_TOPIC, String, queue_size=10)
+        self.comm_pub = rospy.Publisher(COMMON_TOPIC, Packet, queue_size=10)
         self.tx_loc_pub = rospy.Publisher(TRANSPONDER_LOCATION_TOPIC, VehiclePose, queue_size=20)
-        self.resp_pub = rospy.Publisher(RESPONSE_TOPIC, USBLResponseSim, queue_size=1)
+        #self.resp_pub = rospy.Publisher(RESPONSE_TOPIC, USBLResponseSim, queue_size=1)
+        self.resp_pub = rospy.Publisher(RESPONSE_TOPIC, Packet, queue_size=1)
 
         # ROS Subscribers
-        rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
+        #rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
+        rospy.Subscriber(COMMON_TOPIC, Packet, self.__common_cbk)
         rospy.Subscriber(CHANNEL_TOPIC, String, self.__channel_cbk)
         rospy.Subscriber(MODE_TOPIC, String, self.__mode_cbk)
         rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, VehiclePose, self.__rx_loc_cbk)
-        rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
+        #rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
+        rospy.Subscriber(REQUEST_TOPIC, Packet, self.__request_cbk)
 
     # Callback Functions
     def __rx_loc_cbk(self, data):
@@ -119,22 +123,32 @@ class Transceiver():
             except Exception as e:
                 print(e)
                 return None
+            
+    def load_data(self, type, msg):
+        if msg is not None:
+            msg_json = json_message_converter.convert_ros_message_to_json(msg) 
+            packet = Packet()
+            packet.rosmsg_type = type
+            packet.data = str(msg_json)
+            return packet
+        else:
+            return None
 
     def send_ping(self):
-        msg = String()
-        msg.data = 'ping'
+        loaded = self.load_data('std_msgs/String', String(data='ping'))
         if self.mode == INTERROGATION_MODE[0]:       # Common channel
-            self.comm_pub.publish(msg)
+            self.comm_pub.publish(loaded)
         elif self.mode == INTERROGATION_MODE[1]:     # Inidividual channel
             # rospy.loginfo(f'/USBL/transponder_{self.transponder_id}/ping')
             # rospy.loginfo(msg)
-            individual_pub = rospy.Publisher(f'/USBL/transponder_{self.transponder_id}/ping', String, queue_size=1)
-            individual_pub.publish(msg)
+            individual_pub = rospy.Publisher(f'/USBL/transponder_{self.transponder_id}/ping', Packet, queue_size=1)
+            individual_pub.publish(loaded)
 
     def switch_channel(self, channel_id):
         if channel_id != int(self.transponder_id):
             REQUEST_TOPIC = f'/USBL/transponder_{self.transceiver_id}/command_request'
-            self.requests = rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
+            #self.requests = rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
+            self.requests = rospy.Subscriber(REQUEST_TOPIC, Packet, self.__request_cbk)
         self.transponder_id = channel_id
         # rospy.loginfo(f"Transceiver mode: {self.transponder_id}")
 
@@ -173,14 +187,17 @@ class Transceiver():
         else:
             resp_msg.data = f"No location data found for {msg.transponderModelName}."
         # print(resp_msg)
-        self.resp_pub.publish(resp_msg)
+        loaded = self.load_data('ekg_auv_testing/USBLResponseSim', resp_msg)
+        #self.resp_pub.publish(resp_msg)
+        self.resp_pub.publish(loaded)
 
     def send_msg(self, msg):
+        loaded = self.load_data('std_msgs/String', String(data=msg))
         if self.mode == INTERROGATION_MODE[0]:
-            self.comm_pub.publish(msg)
+            self.comm_pub.publish(loaded)
         elif self.mode == INTERROGATION_MODE[1]:
             individual_pub = rospy.Publisher(f'/USBL/transponder_{self.transponder_id}/ping', String, queue_size=1)
-            individual_pub.publish(msg)
+            individual_pub.publish(loaded)
 
     def run(self):
         while not rospy.is_shutdown():
@@ -216,25 +233,40 @@ class Transponder():
         rospy.Subscriber(GAZEBO_MODEL_STATES_TOPIC, ModelStates, self.__models_cbk)
 
         # ROS Publishers
-        #self.loc_pub = rospy.Publisher(self.TRANSPONDER_LOCATION_TOPIC, Point, queue_size=10)
-        self.request_pub = rospy.Publisher(REQUEST_TOPIC, USBLRequestSim, queue_size=1)
+        #self.loc_pub = rospy.Publisher(self.TRANSPONDER_LOCATION_TOPIC, VehiclePose, queue_size=10)
+        #self.request_pub = rospy.Publisher(REQUEST_TOPIC, USBLRequestSim, queue_size=1)
+        self.request_pub = rospy.Publisher(REQUEST_TOPIC, Packet, queue_size=1)
 
         # ROS Subscribers
-        rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
-        rospy.Subscriber(INDIVIDUAL_TOPIC, String, self.__individual_cbk)
-        rospy.Subscriber(RESPONSE_TOPIC, USBLResponseSim, self.__resp_cbk)
+        #rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
+        #rospy.Subscriber(INDIVIDUAL_TOPIC, String, self.__individual_cbk)
+        #rospy.Subscriber(RESPONSE_TOPIC, USBLResponseSim, self.__resp_cbk)
+        rospy.Subscriber(COMMON_TOPIC, Packet, self.__common_cbk)
+        rospy.Subscriber(INDIVIDUAL_TOPIC, Packet, self.__individual_cbk)
+        rospy.Subscriber(RESPONSE_TOPIC, Packet, self.__resp_cbk)
         rospy.Subscriber(SWITCH_TOPIC, String, self.__channel_cbk)
 
     def __common_cbk(self, msg):
         if msg is not None:
-            if msg.data == 'ping':
-                # rospy.loginfo(f'Pinging {self.transponder_id}')
-                self.query_location()
+            type = msg.rosmsg_type
+            processed = self.process_data(msg)
+            if type == 'std_msgs/String':
+                if processed.data == 'ping':
+                    # rospy.loginfo(f'Pinging {self.transponder_id}')
+                    self.query_location()
 
     def __individual_cbk(self, msg):
-        if msg.data == 'ping':
-            # rospy.loginfo(f'Pinging {self.transponder_id}')
-            self.query_location()
+        if msg is not None:
+            type = msg.rosmsg_type
+            processed = self.process_data(msg)
+            if type == 'std_msgs/String':
+                if processed.data == 'ping':
+                    # rospy.loginfo(f'Pinging {self.transponder_id}')
+                    self.query_location()
+            elif type == 'seatrac_pkg/bcn_frame_array':
+                for frame in processed.frame:
+                    if frame.data == 'ping':
+                        self.query_location()
 
     def __channel_cbk(self, msg):
         if msg is not None:
@@ -245,10 +277,11 @@ class Transponder():
             self.models = data
             self.rx_pose.pose = self.get_model_pos(self.transponder_model)
 
-    def __resp_cbk(self, data):
-        if data is not None:
+    def __resp_cbk(self, msg):
+        if msg is not None:
             #print(data)
-            self.command_resp = data
+            processed = self.process_data(msg)
+            self.command_resp = processed
     
     # Methods
     def __dist_between_points(self, start_pose, end_pose):
@@ -263,18 +296,40 @@ class Transponder():
         dist = math.sqrt(sum_of_squares)
         return dist
 
+    def process_data(self, msg):
+        if msg is not None:
+            try:
+                msg_type = msg.rosmsg_type
+                msg_str = msg.data
+                rosmsg = json_message_converter.convert_json_to_ros_message(msg_type, msg_str)
+                return rosmsg
+            except Exception as e:
+                print(e)
+                return None
+            
+    def load_data(self, type, msg):
+        if msg is not None:
+            msg_json = json_message_converter.convert_ros_message_to_json(msg) 
+            packet = Packet()
+            packet.rosmsg_type = type
+            packet.data = str(msg_json)
+            return packet
+        else:
+            return None
+
     def send_location_request(self):
         REQUEST_TOPIC= f'/USBL/transceiver_{self.transceiver_id}/command_request'
-        self.request_pub = rospy.Publisher(REQUEST_TOPIC, USBLRequestSim, queue_size=1)
+        self.request_pub = rospy.Publisher(REQUEST_TOPIC, Packet, queue_size=1)
 
         req = USBLRequestSim()
         req.responseID = int(self.transponder_id)
         req.transceiverID = int(self.transceiver_id)
         req.transponderModelName = self.transponder_model
         req.data = "location"
+        loaded = self.load_data('ekg_auv_testing/USBLRequestSim', req)
         #print(f"send_location request: {self.transceiver_id}")
         # print(req, "\n-------------------------------------")
-        self.request_pub.publish(req)
+        self.request_pub.publish(loaded)
 
     def set_tx_channel(self, channel):
         self.transceiver_id = channel

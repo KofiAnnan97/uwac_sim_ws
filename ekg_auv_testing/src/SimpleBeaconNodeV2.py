@@ -7,13 +7,14 @@ import json
 from sys import argv
 
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Pose, Twist, PoseWithCovariance, Quaternion, Vector3
+from geometry_msgs.msg import PoseStamped, Pose, Twist
 from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import FluidPressure, Imu, NavSatFix
 from std_msgs.msg import String
 from rospy_message_converter import message_converter, json_message_converter
 
-from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim
+from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim, Packet
+from seatrac_pkg.msg import *
 from USBL import Transceiver
 
 SEND_POS_MSG = "location"
@@ -79,7 +80,7 @@ class SimpleBeaconNode:
         # Publishers
         self.move_pub = rospy.Publisher(MOVE_TOPIC, Twist, queue_size=1)
         self.channel_pub = rospy.Publisher(CHANNEL_SWITCH_TOPIC, String, queue_size=1)
-        self.common_pub = rospy.Publisher(COMMON_TOPIC, String, queue_size=30)
+        self.common_pub = rospy.Publisher(COMMON_TOPIC, Packet, queue_size=30)
         self.inter_pub = rospy.Publisher(INTERROGATION_TOPIC, String, queue_size=1)  
 
         # Subscribers
@@ -88,7 +89,8 @@ class SimpleBeaconNode:
         rospy.Subscriber(IMU_TOPIC, Imu, self.__imu_cbk)
         rospy.Subscriber(PRESSURE_TOPIC, FluidPressure, self.__pressure_cbk)
         # rospy.Subscriber(TARGET_LOC_TOPIC, Vector3, self.__target_pos_cbk)
-        rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
+        #rospy.Subscriber(COMMON_TOPIC, String, self.__common_cbk)
+        rospy.Subscriber(COMMON_TOPIC, Packet, self.__common_cbk)
         # rospy.Subscriber(GPS_TOPIC, NavSatFix, self.__gps_cbk)
 
     ###################### 
@@ -126,7 +128,14 @@ class SimpleBeaconNode:
     # Check what transceivers that are set to the same transponder are close
     def __common_cbk(self, msg):
         if msg is not None:
-            msg_str = msg.data
+            processed = self.process_data(msg)
+            #print(processed)
+            try:
+                if msg.rosmsg_type == 'seatrac_pkg/bcn_pose':
+                    self.neighbors[processed.bid] = processed
+            except Exception as e:
+                print(e)
+            """msg_str = msg.data
             if msg_str != 'ping':
                 msg_obj = json.loads(msg_str)
                 bid = msg_obj["bid"]
@@ -140,8 +149,30 @@ class SimpleBeaconNode:
                     pos_msg = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_str)
                     self.neighbors[bid] = pos_msg #strm.rosmsg_from_str(msg_str)
                 except:
-                    pass
+                    pass"""
         
+    
+    def process_data(self, msg):
+        if msg is not None:
+            try:
+                msg_type = msg.rosmsg_type
+                msg_str = msg.data
+                rosmsg = json_message_converter.convert_json_to_ros_message(msg_type, msg_str)
+                return rosmsg
+            except Exception as e:
+                print(e)
+                return None
+            
+    def load_data(self, type, msg):
+        if msg is not None:
+            msg_json = json_message_converter.convert_ros_message_to_json(msg) 
+            packet = Packet()
+            packet.rosmsg_type = type
+            packet.data = str(msg_json)
+            return packet
+        else:
+            return None
+
     ##############################
     # Movement/Sensors Functions #
     ##############################
@@ -195,31 +226,48 @@ class SimpleBeaconNode:
         self.inter_pub.publish(msg)
 
     def send_target_pos(self, transponder_id):
-        loc_pub = rospy.Publisher(f"/USBL/transponder_manufacturer_{transponder_id}/individual_interrogation_ping", String, queue_size=20)
+        loc_pub = rospy.Publisher(f"/USBL/transponder_manufacturer_{transponder_id}/ping", Packet, queue_size=20)
         self.switch_to_target(transponder_id, loc_pub)
 
         if self.target_pos is not None:
-            json_str = json_message_converter.convert_ros_message_to_json(self.target_pos)
-            pos_msg = String()
+            #json_str = json_message_converter.convert_ros_message_to_json(self.target_pos)
+            """pos_msg = String()
             pos_obj = json.loads(json_str)
             beacon_id = {"bid":self.id}
             pos_obj.update(beacon_id)
             pos_str = json.dumps(pos_obj)
-            pos_msg.data = str(pos_str)
-            loc_pub.publish(pos_msg)
+            pos_msg.data = str(pos_str)"""
+
+            orient = self.imu.orientation
+            roll, pitch, yaw = euler_from_quaternion([orient.x, orient.y, orient.z, orient.w])
+            loc = bcn_pose()
+            loc.bid = self.transceiver_id
+            loc.stamp = rospy.Time.now()
+            loc.roll = roll
+            loc.pitch = pitch
+            loc.yaw = yaw
+            loc.x = self.target_pos.pose.position.x
+            loc.y = self.target_pos.pose.position.y
+            loc.z = self.target_pos.pose.position.z
+            loaded = self.load_data('seatrac_pkg/bcn_pose', loc)
+            loc_pub.publish(loaded)
 
     def send_pose_to_common(self):
         self.switch_to_common()
         self.curr_pose.header.stamp = rospy.Time().now()
-        json_str = json_message_converter.convert_ros_message_to_json(self.curr_pose)
-        pos_msg = String()
-        pos_obj = json.loads(json_str)
-        beacon_id = {"bid":self.transceiver_id}
-        pos_obj.update(beacon_id)
-        pos_str = json.dumps(pos_obj)
-        pos_msg.data = str(pos_str)
-        
-        self.common_pub.publish(pos_msg)
+        orient = self.imu.orientation
+        roll, pitch, yaw = euler_from_quaternion([orient.x, orient.y, orient.z, orient.w])
+        loc = bcn_pose()
+        loc.bid = self.transceiver_id
+        loc.roll = roll
+        loc.pitch = pitch
+        loc.yaw = yaw
+        loc.x = self.curr_pose.pose.position.x
+        loc.y = self.curr_pose.pose.position.y
+        loc.z = self.curr_pose.pose.position.z
+        loaded = self.load_data('seatrac_pkg/bcn_pose', loc)
+        #print(loaded)
+        self.common_pub.publish(loaded)
 
     #############
     # Main Code #

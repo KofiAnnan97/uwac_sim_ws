@@ -76,7 +76,13 @@
     <arg name="rx_id" value="$(arg rx_id)"/>
     <arg name="tx_id" value="$(arg tx_id)"/>
   </include>
-  
+
+  <node pkg="seatrac_pkg" name="$(arg namespace)_comm_tester" type="CommIntegrationTest.py" output="screen">
+    <param name="beacon_type" type="string" value="$(arg beacon_type)"/>
+    <param name="transceiver_id" type="string" value="$(arg transceiver_id)"/>
+    <param name="transponder_id" type="string" value="$(arg rx_id)"/>
+  </node>
+
   <node pkg="ekg_auv_testing" name="$(arg namespace)" type="SimpleBeaconNodeV2.py" output="screen" 
     args="$(arg namespace) $(arg rx_id) $(arg x) $(arg y) $(arg z) $(arg transceiver_id)"
   />
