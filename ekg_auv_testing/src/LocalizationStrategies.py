@@ -23,7 +23,6 @@ class Strats:
         for bid in pose_estimates.keys():
             try:
                 node = pose_estimates[bid]
-                # rospy.loginfo(f"Beacon {bid}: ({node.pose.position.x}, {node.pose.position.y}, {node.pose.position.z})")
                 x += node.pose.position.x
                 y += node.pose.position.y
                 z += node.pose.position.z
@@ -45,7 +44,6 @@ class Strats:
         avg_stamp = 0
         closest_stamp = rospy.Time(0, 0)
         furthest_stamp = rospy.Time(200000, 0)
-        #rospy.loginfo(f"Current Time: {curr_time.secs}")
         for bid in pose_estimates.keys():
             try:
                 node = pose_estimates[bid]
@@ -53,13 +51,8 @@ class Strats:
                     closest_stamp = node.header.stamp
                 if furthest_stamp.secs > node.header.stamp.secs:
                     furthest_stamp = node.header.stamp
-                # time_interval = 15
-                # Reward estimations based on transmission time in seconds
                 denom = math.pow((curr_time.secs - node.header.stamp.secs), 2)
                 weight = round(9*(time_interval/denom), 2)
-                #rospy.loginfo(f"beacon_{bid}|| Time: {node.header.stamp.secs}, Weight: {weight}")
-                #rospy.loginfo(f"Time Delay: {curr_time - node.header.stamp.to_sec()}, Weight: {weight}")
-                #rospy.loginfo(f"Beacon {bid}: ({node.pose.position.x}, {node.pose.position.y}, {node.pose.position.z})")
                 avg_stamp += float(f"{node.header.stamp.secs}.{node.header.stamp.nsecs}") * weight
                 x += node.pose.position.x * weight
                 y += node.pose.position.y * weight
@@ -70,9 +63,9 @@ class Strats:
         #rospy.loginfo(f"----------------------------------------")
         if weight_num > 0:
             tmp_pose = VehiclePose()
-            tmp_pose.header.stamp = closest_stamp
-            # tmp_pose.header.stamp = rospy.Time.from_sec(avg_stamp/weight_num)
-            # tmp_pose.header.stamp = furthest_stamp
+            #tmp_pose.header.stamp = closest_stamp
+            tmp_pose.header.stamp = rospy.Time.from_sec(avg_stamp/weight_num)
+            #tmp_pose.header.stamp = furthest_stamp
             tmp_pose.pose.position.x = x/weight_num
             tmp_pose.pose.position.y = y/weight_num
             tmp_pose.pose.position.z = z/weight_num
@@ -83,13 +76,9 @@ class Strats:
         try:
             closest_dist = float("inf")
             beacon_id = -1
-            #print(f"Neighbors: {self.neighbors}")
-            # print(f"Estimates: {self.beacon_estimates.keys()}")
             for bid in pose_estimates.keys():
                 e_pos = pose_estimates[bid]
                 b_pos = neighbors[bid]
-                #rospy.loginfo(f"Beacon {bid}: ({e_pos.pose.position.x}, {e_pos.pose.position.y}, {e_pos.pose.position.z})")
-
                 dist = self.__get_distance(b_pos.pose, e_pos.pose)
                 if dist < closest_dist:
                     closest_dist = dist
@@ -140,7 +129,7 @@ class Strats:
 
         prev_depth = 0
         prev_time = 0
-        aoa_deg = -2.7 #-2.8
+        aoa_deg = -30 #-2.7
 
         for val in data:
             rpy = val[10:]
@@ -171,5 +160,4 @@ class Strats:
             final_pose.pose.position.y += d_y
         if(len(data) > 0):
             final_pose.pose.position.z = depth #data[-1:][3]
-        #rospy.loginfo(f"\n Positon:\n{starting_pose.pose.position}\n New Position:\n{final_pose.pose.position}")
         return final_pose
