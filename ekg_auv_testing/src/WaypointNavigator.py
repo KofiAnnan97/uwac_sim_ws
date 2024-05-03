@@ -21,7 +21,7 @@ from USBL import Transponder
 from Logger import GliderLogger
 from LocalizationStrategies import Strats
 from ekg_auv_testing.msg import USBLRequestSim, USBLResponseSim, VehicleLog, VehiclePose, Packet
-from seatrac_pkg.msg import bcn_pose
+from seatrac_pkg.msg import bcn_pose, bcn_pose_array, bcn_frame, bcn_frame_array
 
 
 AUV_TRUE_POSE_1 = "true_pose"
@@ -67,9 +67,9 @@ class WaypointFollower():
         self.init_pose = VehiclePose()
         from sys import argv
         self.init_pose.vehicle_name = argv[1]
-        self.init_pose.pose.position.x = float(argv[2])
-        self.init_pose.pose.position.y = float(argv[3])
-        self.init_pose.pose.position.z = float(argv[4])
+        self.init_pose.x = float(argv[2])
+        self.init_pose.y = float(argv[3])
+        self.init_pose.z = float(argv[4])
         self.uwg_status = UwGliderStatus()
 
         # Deadreckoning Pose Estimation
@@ -129,42 +129,22 @@ class WaypointFollower():
         self.uwg_status = data
         # rospy.loginfo(self.status_msg(self.uwg_status))
 
-
-    ### FIX THIS ###
     def __comm_cbk(self, msg):
         if msg is not None:
             processed = self.process_data(msg)
+            frame_array = bcn_frame_array()
             if msg.rosmsg_type == 'seatrac_pkg/bcn_pose':
                 bid = processed.bid
-                pos_msg = PoseStamped()
-                pos_msg.header.stamp = processed.stamp
-                pos_msg.pose.position.x = processed.x
-                pos_msg.pose.position.y = processed.y
-                pos_msg.pose.position.z = processed.z
-                quat = quaternion_from_euler(processed.roll, processed.pitch, processed.yaw)
-                pos_msg.pose.orientation.x = quat[0]
-                pos_msg.pose.orientation.y = quat[1]
-                pos_msg.pose.orientation.z = quat[2]
-                pos_msg.pose.orientation.w = quat[3]
-                self.neighbors[bid] = pos_msg
-
-            """msg_str = msg.data
-            if msg_str != 'ping':
-                msg_obj = json.loads(msg_str)
-                bid = msg_obj["bid"]
-                
-                if bid not in self.neighbors.keys():        
-                    self.neighbors[bid] = PoseStamped()
-            
-                del msg_obj["bid"]
-                msg_str = json.dumps(msg_obj) 
-                pos_msg = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_str)
-                #print(pos_msg)
-                self.neighbors[bid] = pos_msg #strm.rosmsg_from_str(msg_str)"""
+                self.neighbors[bid] = processed
+                frame = bcn_frame()
+                frame.bid = bid
+                frame.data = str(json_message_converter.convert_ros_message_to_json(processed))
+                frame_array.frame.append(frame)
+                self.neighbors_pub.publish(frame_array)
 
             try:
                 e_pos = self.beacon_estimates[bid]
-                dist = self.__get_distance(e_pos.pose, pos_msg.pose)
+                dist = self.__get_distance(e_pos, processed)
                 #rospy.loginfo(f"Closest ID: {self.closest_beacon_id}, Closest Distance: {self.closest_beacon_dist}\n\t\t\t\t\tCurrent ID: {bid}, Current Distance: {dist}\n")
                 if bid == self.closest_beacon_id:
                     self.closest_beacon_dist = dist
@@ -178,12 +158,12 @@ class WaypointFollower():
                 # Stall Neighbor and Beacon Pose Estimation 
             """if self.closest_beacon_id != -1:
                 curr_time = rospy.Time.now()
-                cb_stamp = self.beacon_estimates[f"{self.closest_beacon_id}"].header.stamp
+                cb_stamp = self.beacon_estimates[f"{self.closest_beacon_id}"].stamp
                 time_diff = curr_time.secs - cb_stamp.secs
                 for bid, estimate in self.beacon_estimates.items():
                     if time_diff > 50:
                         break
-                    elif (curr_time.secs - estimate.header.stamps.secs) > 2 * time_diff:
+                    elif (curr_time.secs - estimate.stamps.secs) > 2 * time_diff:
                         del self.beacon_estimates[bid]
                         del self.neighbors[bid]"""
         
@@ -222,11 +202,23 @@ class WaypointFollower():
                 try:
                     msg_str = processed.data
                     loc = json_message_converter.convert_json_to_ros_message('ekg_auv_testing/VehiclePose', msg_str)
-                    # print(loc)
                     self.beacon_estimates[f'{processed.transceiverID}'] = loc
                     time.sleep(3)
+                    pose_array = bcn_pose_array()
+                    bp = bcn_pose()
+                    bp.bid = str(processed.transceiverID)
+                    bp.stamp = loc.stamp
+                    bp.roll = loc.roll
+                    bp.pitch = loc.pitch
+                    bp.yaw = loc.yaw
+                    bp.x = loc.x
+                    bp.y = loc.y
+                    bp.z = loc.z
+                    pose_array.pose.append(bp)
+                    print(pose_array)
+                    self.pose_est_pub.publish(pose_array)
                 except Exception as e:
-                    #print(f"{e}\n{resp.data}")
+                    print(f"Response Callback: {e}") #\n{resp.data}
                     pass
 
             """try:
@@ -276,11 +268,14 @@ class WaypointFollower():
         RESP_TOPIC = f'/USBL/transponder_{self.transponder_id}/command_response'
         REQUEST_TOPIC= f'/USBL/transceiver_{self.transceiver_id}/command_request'
 
+        POSE_EST_TOPIC = f'/{argv[1]}/pose_estimates'
+        NEIGBORS_TOPIC = f'/{argv[1]}/neighbors'
+
         # timestamp = datetime.now().isoformat('_', timespec='seconds')
         self.logger = GliderLogger(argv[1], self.log_stamp, POSE_LOG_TOPIC)
         self.logger.start()
 
-        self.localizer = Strats(argv[1], self.log_stamp, POSE_LOG_TOPIC)
+        #self.localizer = Strats(argv[1], self.log_stamp, POSE_LOG_TOPIC)
 
         #Initialize Publishers
         self.command_pub = rospy.Publisher(UWGC_TOPIC, UwGliderCommand, queue_size=1)
@@ -288,6 +283,9 @@ class WaypointFollower():
         self.switch_pub = rospy.Publisher(SWITCH_TOPIC, String, queue_size=1)
         #self.request_pub = rospy.Publisher(REQUEST_TOPIC, USBLRequestSim, queue_size=1)
         self.request_pub = rospy.Publisher(REQUEST_TOPIC, Packet, queue_size=1)
+        
+        self.pose_est_pub = rospy.Publisher(POSE_EST_TOPIC, bcn_pose_array, queue_size=1)
+        self.neighbors_pub = rospy.Publisher(NEIGBORS_TOPIC, bcn_frame_array, queue_size=1)
  
         #Initializee Subscribers
         rospy.Subscriber(TRUE_POSE_TOPIC, PoseStamped, self.__true_pose_cbk)
@@ -408,22 +406,26 @@ class WaypointFollower():
         #if self.est_pose is None:
         #    self.est_pose = self.init_pose
         #else:
-        self.est_pose.header.stamp = rospy.Time.now()
-        self.est_pose.pose.position.x -= d_x #/math.sin(yaw*2.0*math.pi/360)
-        self.est_pose.pose.position.y -= d_y #/math.cos(yaw*2.0*math.pi/360)
-        self.est_pose.pose.position.z = depth
-        self.est_pose.pose.orientation.x = self.imu.orientation.x
+        self.est_pose.stamp = rospy.Time.now()
+        self.est_pose.x -= d_x #/math.sin(yaw*2.0*math.pi/360)
+        self.est_pose.y -= d_y #/math.cos(yaw*2.0*math.pi/360)
+        self.est_pose.z = depth
+        q = self.imu.orientation
+        roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+        """self.est_pose.pose.orientation.x = self.imu.orientation.x
         self.est_pose.pose.orientation.y = self.imu.orientation.y
         self.est_pose.pose.orientation.z = self.imu.orientation.z
-        self.est_pose.pose.orientation.w = self.imu.orientation.w
-
-        e_pos = self.est_pose.pose.position
-        t_pos = self.true_pose.pose.position
+        self.est_pose.pose.orientation.w = self.imu.orientation.w"""
+        self.est_pose.roll = roll
+        self.est_pose.pitch = pitch
+        self.est_pose.yaw = yaw
 
         if self.est_pose is not None and self.imu is not None:
             vl = VehicleLog()
             vl.header = self.imu.header
-            vl.position = self.est_pose.pose.position
+            vl.position.x = self.est_pose.x
+            vl.position.y = self.est_pose.y
+            vl.position.z = self.est_pose.z
             vl.orientation = self.imu.orientation
             vl.orientation_covariance = self.imu.orientation_covariance
             vl.angular_velocity = self.imu.angular_velocity
@@ -431,7 +433,7 @@ class WaypointFollower():
             vl.linear_acceleration = self.imu.linear_acceleration
             vl.linear_acceleration_covariance = self.imu.linear_acceleration_covariance
             self.pose_log_pub.publish(vl)
-            self.grapher.send_data_to_csv(AUV_EST_POSE_1, self.log_stamp, self.est_pose.pose.position.x, self.est_pose.pose.position.y, self.est_pose.pose.position.z, self.est_pose.header.stamp.secs)
+            self.grapher.send_data_to_csv(AUV_EST_POSE_1, self.log_stamp, self.est_pose.x, self.est_pose.y, self.est_pose.z, self.est_pose.stamp.secs)
             #self.grapher.add_path_point(AUV_EST_POSE_1, e_pos.x, e_pos.y, e_pos.z, self.est_pose.header.stamp.secs)
         return self.est_pose if not None else VehiclePose()
 
@@ -554,18 +556,18 @@ class WaypointFollower():
     def helical_test(self, start_time):
         curr_time = rospy.Time.now()
         last_pose = VehiclePose()
-        last_pose.header = self.init_pose.header
-        last_pose.pose = self.init_pose.pose
+        last_pose = self.init_pose
+        #last_pose.pose = self.init_pose.pose
         last_time = -1
         if curr_time.secs - start_time.secs < 61:
             self.query_beacons()
             
             #avg = self.localizer.get_simple_average(self.beacon_estimates)
-            wavg = self.localizer.get_weighted_average(10, self.beacon_estimates)
+            #wavg = self.localizer.get_weighted_average(10, self.beacon_estimates)
             #cn = self.localizer.get_closest_neighbor(self.beacon_estimates, self.neighbors)
 
 
-            if wavg is not None:
+            """if wavg is not None:
                 if last_time != wavg.header.stamp.secs:
                     last_pose = wavg
                     last_time = wavg.header.stamp.secs
@@ -573,11 +575,11 @@ class WaypointFollower():
             last_pose = f_pose
 
             if f_pose is not None:
-                self.grapher.send_data_to_csv(AUV_FUSION_POSE_2, self.log_stamp, f_pose.pose.position.x, f_pose.pose.position.y, f_pose.pose.position.z, curr_time.secs) #f_pose.header.stamp.secs)
+                self.grapher.send_data_to_csv(AUV_FUSION_POSE_2, self.log_stamp, f_pose.pose.position.x, f_pose.pose.position.y, f_pose.pose.position.z, curr_time.secs)""" #f_pose.header.stamp.secs)
             #if avg is not None:
             #    self.grapher.send_data_to_csv(AUV_BEACON_POSE_1, self.log_stamp, avg.pose.position.x, avg.pose.position.y, avg.pose.position.z, curr_time.secs)
-            if wavg is not None:
-                self.grapher.send_data_to_csv(AUV_BEACON_POSE_2, self.log_stamp, wavg.pose.position.x, wavg.pose.position.y, wavg.pose.position.z, curr_time.secs)
+            """if wavg is not None:
+                self.grapher.send_data_to_csv(AUV_BEACON_POSE_2, self.log_stamp, wavg.pose.position.x, wavg.pose.position.y, wavg.pose.position.z, curr_time.secs)"""
             #if cn is not None:
             #    self.grapher.send_data_to_csv(AUV_BEACON_POSE_3, self.log_stamp, cn.pose.position.x, cn.pose.position.y, cn.pose.position.z, curr_time.secs)
             self.circle()

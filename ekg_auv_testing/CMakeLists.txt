@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
    sensor_msgs
    geometry_msgs
    message_generation
-#   seatrac_pkg
+   #seatrac_pkg
 )
 
 add_message_files(
@@ -34,6 +34,7 @@ add_message_files(
 generate_messages(
    DEPENDENCIES
    std_msgs
+   sensor_msgs 
    geometry_msgs
 )
 

@@ -1,95 +1,188 @@
+#!/usr/bin/env python3
+
 import rospy
 import math
+import json
+
+from geometry_msgs.msg import PoseStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+
+from rospy_message_converter import message_converter, json_message_converter
 
 from ekg_auv_testing.msg import VehiclePose
+from seatrac_pkg.msg import bcn_frame_array, bcn_pose, bcn_pose_array, bcn_status_array
 from Logger import GliderLogger
 
 class Strats:
-    def __init__(self, glider_name, stamp, glider_topic):
+    #def __init__(self, glider_name, stamp, glider_topic):
+    def __init__(self):
         self.start_time = 0
         self.prev_start_time = -1
-        self.g_logger = GliderLogger(glider_name, stamp, glider_topic)
-        self.g_logger.set_glider_log(glider_name, stamp)
+        #self.g_logger = GliderLogger(glider_name, stamp, glider_topic)
+        #self.g_logger.set_glider_log(glider_name, stamp)
+
+        self.rate = rospy.Rate(10)
+        
+        self.pose_estimates = dict()
+        self.neighbors = dict()
+        """self.neighbors ={"BEACON_ID0": None,
+                         "BEACON_ID1": None,
+                         "BEACON_ID2": None,
+                         "BEACON_ID3": None,
+                         "BEACON_ID4": None,
+                         "BEACON_ID5": None,
+                         "BEACON_ID6": None,
+                         "BEACON_ID7": None,
+                         "BEACON_ID8": None,
+                         "BEACON_ID9": None,
+                         "BEACON_ID10": None,
+                         "BEACON_ID11": None,
+                         "BEACON_ID12": None,
+                         "BEACON_ID13": None,
+                         "BEACON_ID14": None,
+                         "BEACON_ID15": None}"""
+
+        self.glider_name = rospy.get_param("~namespace")
+        
+        POSE_TOPIC = rospy.get_param("~pose_est_topic")
+        NEIGHBOR_TOPIC = rospy.get_param("~neighbors_topic")
+        #GLIDER_LOG_TOPIC = rospy.get_param("~glider_log_topic")
+        LOC_STRAT_TOPIC = f"{self.glider_name}/strats/pose"
+
+        rospy.Subscriber(POSE_TOPIC, bcn_pose_array, self.__poses_cbk)
+        rospy.Subscriber(NEIGHBOR_TOPIC, bcn_frame_array, self.__neighbor_cbk)
+
+        self.strat_pub = rospy.Publisher(LOC_STRAT_TOPIC, VehiclePose, queue_size=2)
+
+    def __poses_cbk(self, msg):
+        if msg is not None:
+            for pose in msg.pose:
+                """tmp_pose = bcn_pose()
+                tmp_pose.stamp = pose.stamp
+                tmp_pose.roll = pose.roll
+                tmp_pose.pitch = pose.pitch
+                tmp_posepose.yaw)
+                tmp_pose.pose.orientation.x = q[0]
+                tmp_pose.pose.orientation.y = q[1]
+                tmp_pose.pose.orientation.z = q[2]
+                tmp_pose.pose.orientation.w = q[3]
+                tmp_pose.pose.position.x = pose.x
+                tmp_pose.pose.position.y = pose.y
+                tmp_pose.pose.position.z = pose.z"""
+                self.pose_estimates[pose.bid] = pose
+
+    def __neighbor_cbk(self, msg):
+        if msg is not None:
+            #print(f"Message: {msg}")
+            for frame in msg.frame:
+                neighbor = self.process_data(frame.data, "seatrac_pkg/bcn_pose")
+                self.neighbors[neighbor.bid] = neighbor
 
     def __get_distance(self,curr_pose, next_pose):
-        sum_of_squares = math.pow(curr_pose.position.x - next_pose.position.x, 2) + \
-                         math.pow(curr_pose.position.y - next_pose.position.y, 2) + \
-                         math.pow(curr_pose.position.z - next_pose.position.z, 2)
+        sum_of_squares = math.pow(curr_pose.x - next_pose.x, 2) + \
+                         math.pow(curr_pose.y - next_pose.y, 2) + \
+                         math.pow(curr_pose.z - next_pose.z, 2)
         dist = math.sqrt(math.fabs(sum_of_squares))
         return dist
 
-    def get_simple_average(self, pose_estimates):
+    def process_data(self, msg_str, type):
+        try:
+            #print(msg_str)
+            #msg_obj = json.loads(msg_str)
+            rosmsg = json_message_converter.convert_json_to_ros_message(type, msg_str)
+            return rosmsg
+        except Exception as e:
+            print(e)
+            return None
+
+    def get_simple_average(self):
         x, y, z, beacon_num = 0, 0, 0, 0
-        for bid in pose_estimates.keys():
+        for bid in self.pose_estimates.keys():
             try:
-                node = pose_estimates[bid]
-                x += node.pose.position.x
-                y += node.pose.position.y
-                z += node.pose.position.z
+                node = self.pose_estimates[bid]
+                x += node.x
+                y += node.y
+                z += node.z
                 beacon_num += 1
             except:
                 pass
         if beacon_num > 0:
             tmp_pose = VehiclePose()
-            tmp_pose.pose.position.x = x/beacon_num
-            tmp_pose.pose.position.y = y/beacon_num
-            tmp_pose.pose.position.z = z/beacon_num
+            tmp_pose.vehicle_name = "Average"
+            tmp_pose.x = x/beacon_num
+            tmp_pose.y = y/beacon_num
+            tmp_pose.z = z/beacon_num
+            self.strat_pub.publish(tmp_pose)
             return tmp_pose
         return None
 
-    def get_weighted_average(self, time_interval, pose_estimates):
+    def get_weighted_average(self, time_interval):
         x, y, z, weight_num = 0, 0, 0, 0
         curr_time = rospy.Time.now()
 
         avg_stamp = 0
         closest_stamp = rospy.Time(0, 0)
         furthest_stamp = rospy.Time(200000, 0)
-        for bid in pose_estimates.keys():
+        for bid in self.pose_estimates.keys():
             try:
-                node = pose_estimates[bid]
-                if closest_stamp.secs < node.header.stamp.secs:
-                    closest_stamp = node.header.stamp
-                if furthest_stamp.secs > node.header.stamp.secs:
-                    furthest_stamp = node.header.stamp
-                denom = math.pow((curr_time.secs - node.header.stamp.secs), 2)
+                node = self.pose_estimates[bid]
+                if closest_stamp.secs < node.stamp.secs:
+                    closest_stamp = node.stamp
+                if furthest_stamp.secs > node.stamp.secs:
+                    furthest_stamp = node.stamp
+                denom = math.pow((curr_time.secs - node.stamp.secs), 2)
                 weight = round(9*(time_interval/denom), 2)
-                avg_stamp += float(f"{node.header.stamp.secs}.{node.header.stamp.nsecs}") * weight
-                x += node.pose.position.x * weight
-                y += node.pose.position.y * weight
-                z += node.pose.position.z * weight
+                avg_stamp += float(f"{node.stamp.secs}.{node.stamp.nsecs}") * weight
+                x += node.x * weight
+                y += node.y * weight
+                z += node.z * weight
                 weight_num += weight
             except Exception as e:
                 print(f"Weighted Avg Func: {e}")
         #rospy.loginfo(f"----------------------------------------")
         if weight_num > 0:
             tmp_pose = VehiclePose()
+            tmp_pose.vehicle_name = "Weighted Average"
             #tmp_pose.header.stamp = closest_stamp
-            tmp_pose.header.stamp = rospy.Time.from_sec(avg_stamp/weight_num)
+            tmp_pose.stamp = rospy.Time.from_sec(avg_stamp/weight_num)
             #tmp_pose.header.stamp = furthest_stamp
-            tmp_pose.pose.position.x = x/weight_num
-            tmp_pose.pose.position.y = y/weight_num
-            tmp_pose.pose.position.z = z/weight_num
+            tmp_pose.x = x/weight_num
+            tmp_pose.y = y/weight_num
+            tmp_pose.z = z/weight_num
+            #self.strat_pub.publish(tmp_pose)
             return tmp_pose
         return None
 
-    def get_closest_neighbor(self, pose_estimates, neighbors):
+
+    # ISSUE: Pose estimates are not being populated 
+
+    def get_closest_neighbor(self):
         try:
             closest_dist = float("inf")
             beacon_id = -1
-            for bid in pose_estimates.keys():
-                e_pos = pose_estimates[bid]
-                b_pos = neighbors[bid]
-                dist = self.__get_distance(b_pos.pose, e_pos.pose)
+            for bid in self.pose_estimates.keys():
+                e_pos = self.pose_estimates[bid]
+                b_pos = self.neighbors[bid]
+                dist = self.__get_distance(b_pos, e_pos)
                 if dist < closest_dist:
                     closest_dist = dist
                     beacon_id = bid
-            return pose_estimates[beacon_id]
+
+            tmp_pose = VehiclePose()
+            tmp_pose.vehicle_name = "Closest Neighbor"
+            tmp_pose.stamp = self.pose_estimates[beacon_id].stamp
+            tmp_pose.x = self.pose_estimates[beacon_id].x
+            tmp_pose.y = self.pose_estimates[beacon_id].y
+            tmp_pose.z = self.pose_estimates[beacon_id].z
+            #self.strat_pub.publish(tmp_pose)
+
+            return self.pose_estimates[beacon_id]
         except Exception as e:
-            rospy.loginfo("Neighbors could not be found.")
-            print(e)
+            #rospy.loginfo("Neighbors could not be found.")
+            #print(f"Get Closest Neighbor: {e}")
             return None
 
-    def get_weighted_average_deadreckoning(self, wavg_pose):
+    """def get_weighted_average_deadreckoning(self, wavg_pose):
         if wavg_pose is not None:
             try:
                 start_time = wavg_pose.header.stamp.secs
@@ -160,4 +253,19 @@ class Strats:
             final_pose.pose.position.y += d_y
         if(len(data) > 0):
             final_pose.pose.position.z = depth #data[-1:][3]
-        return final_pose
+        return final_pose"""
+    
+    def run(self):
+        while not rospy.is_shutdown():
+            avg = self.get_simple_average()
+            wavg = self.get_weighted_average(10)
+            cn = self.get_closest_neighbor()
+            self.rate.sleep()
+
+if __name__ == "__main__":
+    rospy.init_node("loc_strats", anonymous=True)
+    ls = Strats()
+    try:
+        ls.run()
+    except rospy.ROSInterruptException:
+        rospy.loginfo(f"Localization Strategy node has terminated.")

@@ -80,10 +80,16 @@
     <arg name="tx_id" value="$(arg tx_id)"/>
   </include>
 
-  <node pkg="seatrac_pkg" name="$(arg namespace)_comm_tester" type="CommIntegrationTest.py" output="screen">
+  <node pkg="seatrac_pkg" name="$(arg namespace)_comm_tester" type="CommIntegrationTest.py">
     <param name="beacon_type" type="string" value="$(arg beacon_type)"/>
     <param name="transponder_id" type="string" value="$(arg transponder_id)"/>
     <param name="transceiver_id" type="string" value="$(arg tx_id)"/>
+  </node>
+
+  <node pkg="ekg_auv_testing" name="$(arg namespace)_loc_strats" type="LocalizationStrategies.py">
+    <param name="pose_est_topic" type="string" value="/$(arg namespace)/pose_estimates"/>
+    <param name="neighbors_topic" type="string" value="/$(arg namespace)/neighbors"/>
+    <param name="namespace" type="string" value="$(arg robot_name)"/>
   </node>
 
   <!-- Glider Navigation -->

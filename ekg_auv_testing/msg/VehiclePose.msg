@@ -1,3 +1,8 @@
 string vehicle_name
-std_msgs/Header header
-geometry_msgs/Pose pose
+time stamp
+float32 roll
+float32 pitch 
+float32 yaw
+float32 x
+float32 y
+float32 z

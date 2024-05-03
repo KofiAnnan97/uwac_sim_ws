@@ -71,7 +71,9 @@
   <!-- Beacons -->
   <include file="$(find ekg_auv_testing)/launch/uploads/beacon_config.launch">
     <arg name="robot_name" value="beacon_1"/>
-    <arg name="bid" value="1"/>
+    <!--arg name="bid" value="1"/-->
+    <arg name="beacon_type" value="X150"/>
+    <arg name="rx_id" default="1"/>
     <arg name="transceiver_id" value="141"/>
     <arg name="x" value="0"/>
     <arg name="y" value="0"/>
@@ -80,7 +82,9 @@
 
   <include file="$(find ekg_auv_testing)/launch/uploads/beacon_config.launch">
     <arg name="robot_name" value="beacon_2"/>
-    <arg name="bid" value="2"/>
+    <!--arg name="bid" value="2"/-->
+    <arg name="beacon_type" value="X150"/>
+    <arg name="rx_id" default="1"/>
     <arg name="transceiver_id" value="142"/>
     <arg name="x" value="0"/>
     <arg name="y" value="60"/>
@@ -89,7 +93,9 @@
 
   <include file="$(find ekg_auv_testing)/launch/uploads/beacon_config.launch">
     <arg name="robot_name" value="beacon_3"/>
-    <arg name="bid" value="3"/>
+    <!--arg name="bid" value="3"/-->
+    <arg name="beacon_type" value="X150"/>
+    <arg name="rx_id" default="1"/>
     <arg name="transceiver_id" value="143"/>
     <arg name="x" value="60"/>
     <arg name="y" value="0"/>

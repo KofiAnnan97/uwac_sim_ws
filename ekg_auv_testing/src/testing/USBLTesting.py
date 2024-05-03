@@ -9,6 +9,8 @@ from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped
 from gazebo_msgs.msg import ModelStates
 
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+
 from rospy_message_converter import message_converter, json_message_converter
 
 from seatrac_pkg.msg import bcn_frame_array, bcn_frame, bcn_pose_array, bcn_pose, bcn_status_array, bcn_status, bcn_remote_gps, head, loc
@@ -29,7 +31,7 @@ class Transceiver():
         self.mode = INTERROGATION_MODE[0]
         self.transceiver_model = model
         self.transponder_model = None
-        self.tx_pose = PoseStamped()
+        self.tx_pose = bcn_pose()
 
         self.models = ModelStates()
 
@@ -89,7 +91,17 @@ class Transceiver():
     def __models_cbk(self, data):
         if data is not None:
             self.models = data
-            self.tx_pose.pose = self.get_model_pos(self.transceiver_model)
+            pose = self.get_model_pos(self.transceiver_model)
+            self.tx_pose.bid = self.transceiver_id
+            q = pose.orientation
+            roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+            self.tx_pose.roll = roll
+            self.tx_pose.pitch = pitch
+            self.tx_pose.yaw = yaw
+            self.tx_pose.x = pose.position.x
+            self.tx_pose.y = pose.position.y
+            self.tx_pose.z = pose.position.z
+            
 
     def __channel_cbk(self, data):
         msg = data
@@ -108,9 +120,10 @@ class Transceiver():
     
     def __request_cbk(self, msg):
         if msg is not None:
-            if msg.data == "location":
+            processed = self.process_data(msg)
+            if processed.data == "location":
                 self.send_ping()
-                self.send_command_response(msg)
+                self.send_command_response(processed)
                 
     # Methods
     def process_data(self, msg):
@@ -186,7 +199,6 @@ class Transceiver():
             resp_msg.data = loc_str
         else:
             resp_msg.data = f"No location data found for {msg.transponderModelName}."
-        # print(resp_msg)
         loaded = self.load_data('ekg_auv_testing/USBLResponseSim', resp_msg)
         #self.resp_pub.publish(resp_msg)
         self.resp_pub.publish(loaded)
@@ -211,7 +223,7 @@ class Transponder():
         self.transceiver_id = transceiver_id
         self.transceiver_model = None
         self.transponder_model = model_name
-        self.rx_pose = PoseStamped()
+        self.rx_pose = bcn_pose()
 
         self.models = ModelStates()
 
@@ -252,7 +264,7 @@ class Transponder():
             processed = self.process_data(msg)
             if type == 'std_msgs/String':
                 if processed.data == 'ping':
-                    # rospy.loginfo(f'Pinging {self.transponder_id}')
+                    rospy.loginfo(f'Pinging {self.transponder_id}')
                     self.query_location()
 
     def __individual_cbk(self, msg):
@@ -275,7 +287,17 @@ class Transponder():
     def __models_cbk(self, data):
         if data is not None:
             self.models = data
-            self.rx_pose.pose = self.get_model_pos(self.transponder_model)
+            pose = self.get_model_pos(self.transponder_model)
+            self.rx_pose.bid = self.transceiver_id
+            q = pose.orientation
+            roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+            self.rx_pose.roll = roll
+            self.rx_pose.pitch = pitch
+            self.rx_pose.yaw = yaw
+            self.rx_pose.x = pose.position.x
+            self.rx_pose.y = pose.position.y
+            self.rx_pose.z = pose.position.z
+            
 
     def __resp_cbk(self, msg):
         if msg is not None:
@@ -285,12 +307,12 @@ class Transponder():
     
     # Methods
     def __dist_between_points(self, start_pose, end_pose):
-        x1 = start_pose.position.x
-        y1 = start_pose.position.y
-        z1 = start_pose.position.z
-        x2 = end_pose.position.x
-        y2 = end_pose.position.y
-        z2 = end_pose.position.z
+        x1 = start_pose.x
+        y1 = start_pose.y
+        z1 = start_pose.z
+        x2 = end_pose.x
+        y2 = end_pose.y
+        z2 = end_pose.z
         dist = 0
         sum_of_squares = math.pow(x1-x2,  2)+ math.pow(y1-y2, 2) + math.pow(z1-z2, 2) 
         dist = math.sqrt(sum_of_squares)
@@ -327,7 +349,7 @@ class Transponder():
         req.transponderModelName = self.transponder_model
         req.data = "location"
         loaded = self.load_data('ekg_auv_testing/USBLRequestSim', req)
-        #print(f"send_location request: {self.transceiver_id}")
+        # print(f"send_location request: {self.transceiver_id}")
         # print(req, "\n-------------------------------------")
         self.request_pub.publish(loaded)
 
@@ -353,25 +375,34 @@ class Transponder():
     def query_location(self):
         try:
             #start_time = rospy.Time.now()
-            tx_pose = PoseStamped()
-            tx_pose.pose = self.get_model_pos(self.transceiver_model)
+            tx_pose = bcn_pose()
+            pose = self.get_model_pos(self.transceiver_model)
+            tx_pose.bid = self.transceiver_id
+            q = pose.orientation
+            roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+            tx_pose.roll = roll
+            tx_pose.pitch = pitch
+            tx_pose.yaw = yaw
+            tx_pose.x = pose.position.x
+            tx_pose.y = pose.position.y
+            tx_pose.z = pose.position.z
 
-            dist = self.__dist_between_points(self.rx_pose.pose, tx_pose.pose)
+            #dist = self.__dist_between_points(self.rx_pose.pose, tx_pose.pose)
+            dist = self.__dist_between_points(self.rx_pose, tx_pose)
             # rospy.loginfo(f"Calculated distance: {dist}")
-            sound_propagation_speed = SPEED_OF_SOUND + self.rx_pose.pose.position.z/1000 * 17
+            sound_propagation_speed = SPEED_OF_SOUND + self.rx_pose.z/1000 * 17
             delay = (dist/sound_propagation_speed)*1
             #rospy.loginfo(f"Delay time: {delay}")
             time.sleep(delay)
             loc_pub = rospy.Publisher(f'/USBL/transceiver_{self.transceiver_id}/transponder_pose', VehiclePose, queue_size=20)
             loc = VehiclePose()
             noise = np.random.normal(self.mu, self.sigma, 3)
-            loc.header.stamp = rospy.Time.now() # start_time + rospy.Duration(delay)
+            loc.stamp = rospy.Time.now() # start_time + rospy.Duration(delay)
             loc.vehicle_name = self.transponder_model
             #rospy.loginfo(f"{self.transceiver_id} || Time: {tx_loc.header.stamp.secs}")
-            loc.pose.position.x = self.rx_pose.pose.position.x + noise[0]
-            loc.pose.position.y = self.rx_pose.pose.position.y + noise[1]
-            loc.pose.position.z = self.rx_pose.pose.position.z + noise[2]
-            # print(loc)
+            loc.x = self.rx_pose.x + noise[0]
+            loc.y = self.rx_pose.y + noise[1]
+            loc.z = self.rx_pose.z + noise[2]
             loc_pub.publish(loc)
                     
         except Exception as e:

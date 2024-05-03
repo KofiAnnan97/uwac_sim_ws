@@ -75,7 +75,7 @@ class SimpleBeaconNode:
         GPS_TOPIC = f'/{argv[1]}/hector_gps'
 
         self.rate = rospy.Rate(10)
-        self.target_pos = PoseStamped()
+        self.target_pos = bcn_pose()
 
         # Publishers
         self.move_pub = rospy.Publisher(MOVE_TOPIC, Twist, queue_size=1)
@@ -107,9 +107,10 @@ class SimpleBeaconNode:
 
     def __target_pos_cbk(self, data):
             if data is not None:
-                self.target_pos.pose.position.x = data.x
+                self.target_pos = data
+                """self.target_pos.pose.position.x = data.x
                 self.target_pos.pose.position.y = data.y
-                self.target_pos.pose.position.z = data.z
+                self.target_pos.pose.position.z = data.z"""
             else:
                 rospy.loginfo(f"{argv[1]} has not detected transponder yet.")
 
@@ -135,22 +136,6 @@ class SimpleBeaconNode:
                     self.neighbors[processed.bid] = processed
             except Exception as e:
                 print(e)
-            """msg_str = msg.data
-            if msg_str != 'ping':
-                msg_obj = json.loads(msg_str)
-                bid = msg_obj["bid"]
-                
-                if bid not in self.neighbors.keys():        
-                    self.neighbors[bid] = PoseStamped()
-            
-                del msg_obj["bid"]
-                msg_str = json.dumps(msg_obj) 
-                try:
-                    pos_msg = json_message_converter.convert_json_to_ros_message('geometry_msgs/PoseStamped', msg_str)
-                    self.neighbors[bid] = pos_msg #strm.rosmsg_from_str(msg_str)
-                except:
-                    pass"""
-        
     
     def process_data(self, msg):
         if msg is not None:
@@ -188,26 +173,6 @@ class SimpleBeaconNode:
         except:
             rospy.loginfo("Depth could not be calculated.")
             return 0
-        
-    def move_to(self, desired_depth):
-        Kp = 0.5
-        curr_depth = self.get_depth()
-        err = desired_depth - curr_depth
-        z = (Kp * err) if z <= 1 else 1
-
-        cmd_msg = Twist()
-        cmd_msg.linear.z = z
-        self.move_pub.publish(cmd_msg)
-
-    def layer_agent(self):
-        layers = [-2, -10 , -20]
-        if self.layer_idx > len(layers):
-            self.layer_idx = 0
-        desired_depth = layers[self.layer_idx]
-        self.move_to(desired_depth)
-        if math.fabs(self.get_depth() - desired_depth) < 0.5:
-            self.layer_idx += 1
-            rospy.sleep(30)
      
      ###########################
      # Communication Functions #
@@ -279,11 +244,6 @@ class SimpleBeaconNode:
         while not rospy.is_shutdown():
             self.send_pose_to_common()
             time.sleep(3)
-            """twist = Twist()
-            twist.linear.x = -0.2
-            twist.linear.y = 0.2
-            # self.layer_agent()
-            self.move_pub.publish(twist)""" 
             self.rate.sleep()    
 
 if __name__ == "__main__":
