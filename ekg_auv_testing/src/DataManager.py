@@ -41,7 +41,8 @@ class TrafficManager:
         pass
 
     def add_item(self, item):
-        packets = self.pc.create_packets(item)
+        #packets = self.pc.create_packets(item)
+        packets  = self.pc.create_data_packets(item)
         for packet in packets:
             msg = {
                 'priority': packet[0],
@@ -63,8 +64,10 @@ class TrafficManager:
     def retrieve_payloads(self):
         output_queue = self.get_output()
         for output in output_queue:
-            self.pc.add_data(output)
-        payload_outputs = self.pc.retrieve_payloads()
+            #self.pc.add_data(output)
+            self.pc.add_data_str(output)
+        #payload_outputs = self.pc.retrieve_payloads()
+        payload_outputs = self.pc.retrieve_data_payloads()
         return payload_outputs
 
 class PriorityQueue:
@@ -148,6 +151,20 @@ class PacketCreator:
             '0B': 3
         }
 
+        self.p_tbl = {
+            '$DMBPA': 1,
+            '$DMBPE': 1,
+            '$DMBFA': 3,
+            '$DMBFE': 3,
+            '$DMBRG': 2,
+            '$DMBSA': 9,
+            '$DMBSS': 9,
+            '$DMHED': 2,
+            '$DMIVO': 5,
+            '$DMLOC': 1,
+            '$DMVPE': 3
+        }
+
         self.inverse_rm_tbl = {
             'seatrac_pkg/bcn_pose_array': '01',
             'seatrac_pkg/bcn_pose': '02',
@@ -173,13 +190,16 @@ class PacketCreator:
 
     def create_data_str(self, msg):
         data_str = None
-
         if isinstance(msg, bcn_pose):
             data_str = f'$DMBPE,{msg.bid},{msg.stamp.secs},{round(msg.roll,4)},{round(msg.pitch, 4)},{round(msg.yaw,4)},{round(msg.x, 4)},{round(msg.y, 4)},{round(msg.z, 4)}'
         elif isinstance(msg, bcn_frame):
-            data_str = f'$DMBFE,{msg.bid},{msg.data}'
+            if "," in msg.data or "\\" in msg.data:
+                print("Data cannot have a comma (') or backslash (\) present.")
+            else:    
+                data_str = f'$DMBFE,{msg.bid},{msg.data}'
+            #print(data_str)
         elif isinstance(msg, loc):
-            data_str = f'$DMGPS,{round(msg.lat, 4)},{round(msg.long, 4)}'
+            data_str = f'$DMLOC,{round(msg.lat, 4)},{round(msg.long, 4)}'
         return data_str
     
     def from_str_to_msg(self, msg):
@@ -206,23 +226,23 @@ class PacketCreator:
                 r_msg = loc()
                 r_msg.lat = float(data[1])
                 r_msg.long = float(data[2])
-            
             return r_msg
         except Exception as e:
             print(e)
             return None
 
-    def create_data_packets(self, msg_str):
+    def create_data_packets(self, msg):
+        msg_str = self.create_data_str(msg)
         chunks = []
         data = re.split(r",", msg_str)
         m_id = data[0]
-        priority = self.priority_tbl['06']
+        priority = self.p_tbl[m_id]
         chunk_limit = 99
 
         p_id = str(uuid.uuid4())[:7]
         order = 1
+        chunk_header = f'{m_id},{p_id}'
         if m_id == '$DMBPE':
-            chunk_header = f'{m_id},{p_id}'
             chunk_str = f'{chunk_header},{order},{data[1]},{data[2]}'
             chunks.append((priority,chunk_str))
             order += 1
@@ -231,17 +251,44 @@ class PacketCreator:
             order += 1
             chunk_str = f'{chunk_header},f,{data[6]},{data[7]},{data[8]}'
             chunks.append((priority,chunk_str))
-        elif m_id == '$DMGPS':
-            chunk_header = f'{m_id},{uuid}'
+        elif m_id == '$DMBFE':
+            idx_size = 25
+            idx = 0
+            data_length = len(data[2])
+            if data_length < idx_size:
+                chunk_str = f'{chunk_header},f,{data[1]},{data[2]}'
+                chunks.append((priority,chunk_str))
+            else:
+                chunk_str = f'{chunk_header},{order},{data[1]},{data[2][:idx_size-len(data[1])]}\\'
+                chunks.append((priority,chunk_str))
+                idx += (idx_size - len(data[1]))
+                order += 1
+                while idx < data_length:
+                    if (idx + idx_size) > data_length:
+                        chunk_str = f'{chunk_header},f,{data[2][idx:]}'
+                    else:
+                        chunk_str = f'{chunk_header},{order},{data[2][idx:idx+idx_size]}\\'
+                    idx += idx_size
+                    order += 1
+                    chunks.append((priority,chunk_str))
+        elif m_id == '$DMLOC':
             chunk_str = f'{chunk_header},f,{data[1]},{data[2]}'
             chunks.append((priority,chunk_str))
         return chunks
     
+    def packet_num(self, int_str):
+        if int_str == 'f':
+            return int_str
+        elif int(int_str) < 10:
+            return f"0{int_str}"
+        else: 
+            return int_str
+
     def order_data_chunks(self, chunks):
         try:
             if len(chunks) == 1:
                 return chunks
-            ordered_chunks = sorted(chunks, key=lambda packet: re.split(r',', packet)[2])
+            ordered_chunks = sorted(chunks, key=lambda packet: self.packet_num(re.split(r',', packet)[2]))
             return ordered_chunks
         except:
             return None
@@ -252,8 +299,9 @@ class PacketCreator:
             m_id = ordered_chunks[0].split(",")[0] 
             msg_str = m_id
             for packet in ordered_chunks:
-                data = re.sub("\A\$[A-Z]+,[a-zA-Z0-9]+,[a-z0-9]+", "", packet)
+                data = re.sub("\A\$[A-Z]+,[a-zA-Z0-9]+,[a-z0-9]+,", ",", packet)
                 msg_str += data
+            msg_str = re.sub(r'\\,', '', msg_str)
             msg = self.from_str_to_msg(msg_str)
             return msg
         except Exception as e:
@@ -262,13 +310,18 @@ class PacketCreator:
 
     def retrieve_data_payloads(self):
         output = []
-        for i in range(len(self.payloads)):
-            uuid = list(self.payloads.keys())[0]
-            preview = self.order_data_chunks(self.payloads[uuid])
+        remaining = 0
+        #for i in range(len(self.payloads)):
+        while len(self.payloads) > remaining:
+            p_id = list(self.payloads.keys())[0]
+            preview = self.order_data_chunks(self.payloads[p_id])
             if preview[-1].split(",")[2] == 'f':
-                chunks = self.payloads.pop()
+                chunks = self.payloads.pop(p_id)
                 msg = self.assemble_data_payload(chunks)
-                output.apend(msg)
+                output.append(msg)
+            else:
+                remaining += 1
+        #print(self.payloads)
         return output
 
 ########################################
@@ -558,7 +611,7 @@ def DataManagerTest():
     frame1 = bcn_frame()
     frame1.bid = "BEACONID1"
     frame1.data = """
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ac turpis egestas sed tempus urna et pharetra. Sed enim ut sem viverra aliquet eget sit 
+    Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ac turpis egestas sed tempus urna et pharetra. Sed enim ut sem viverra aliquet eget sit 
     amet tellus. Venenatis lectus magna fringilla urna. Ac tortor vitae purus faucibus ornare suspendisse sed nisi lacus. Nunc id cursus metus aliquam eleifend mi. Faucibus a pellentesque sit amet porttitor eget. 
     Diam sollicitudin tempor id eu nisl. Tempus imperdiet nulla malesuada pellentesque elit eget gravida cum sociis. Diam sit amet nisl suscipit adipiscing bibendum est ultricies integer.
 
@@ -575,15 +628,9 @@ def DataManagerTest():
     tm.add_item(frame1)
     tm.add_item(lc1)
 
-    for i in range(10):
-        print(tm.retrieve_payloads())
-
-    """for i in range(10):
-        outputs = tm.get_output()
-        for output in outputs:
-            tm.pc.add_data(output)
-        payloads = tm.pc.retrieve_payloads()
-        print(payloads)"""
+    for i in range(12):
+        payloads = tm.retrieve_payloads()
+        print(payloads)
 
 def DataStrTest():
     pose1 = bcn_pose()
