@@ -631,9 +631,9 @@ class Graphing3D:
             file_name = f'{timestamp}_{new_label}.csv'
             file_path = os.path.join(label_path, file_name)
 
-            """with open(file_path, 'w', newline='') as cw:
+            with open(file_path, 'w', newline='') as cw:
                 writer = csv.writer(cw)
-                writer.writerow(["timestamp", "x", "y", "z"])"""
+                writer.writerow(["timestamp", "x", "y", "z"])
         return timestamp 
 
     def graph_data_from_csv(self, labels, timestamp, title):
@@ -664,6 +664,6 @@ class Graphing3D:
         path_path = os.path.join(logs_path, path_name)
         file_path = os.path.join(path_path, file_name)
 
-        """with open(file_path, 'a', newline='') as cw:
+        with open(file_path, 'a', newline='') as cw:
             writer = csv.writer(cw)
-            writer.writerow([time, x, y, z])"""
+            writer.writerow([time, x, y, z])
