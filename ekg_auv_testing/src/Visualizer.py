@@ -7,6 +7,41 @@ import csv
 import os
 import re
 
+class XYPath:
+    def __init__(self):
+        self.path = list()
+        self.label = None
+
+    def add_point(self, x, y):
+        if x != None and y != None:
+            pt = (x, y)
+            self.path.append(pt)
+
+    def set_label(self, label_str):
+        self.label = label_str
+
+    def get_label(self):
+        return self.label
+
+    def get_x_pts(self):
+        if len(self.path) > 0:
+            return list(map(lambda pt: pt[0], self.path))
+        else:
+            return None
+    
+    def get_y_pts(self):
+        if len(self.path) > 0:
+            return list(map(lambda pt: pt[1], self.path))
+        else:
+            return None
+        
+    def to_str(self):
+        if len(self.path) > 0:
+            for pt in self.path:
+                print(f"({pt[0]}, {pt[1]})")
+        else:
+            print("Empty")
+
 class XYZPath:
     def __init__(self):
         self.path = list()
@@ -47,7 +82,47 @@ class XYZPath:
                 print(f"({pt[0]}, {pt[1]}, {pt[2]})")
         else:
             print("Empty")
+
+class XYTimePath:
+    def __init__(self):
+        self.path = list()
+        self.label = None
+    def add_point(self, x, y, time):
+        if x != None and y != None and time != None:
+            pt = (x, y, time)
+            self.path.append(pt)
+
+    def set_label(self, label_str):
+        self.label = label_str
+
+    def get_label(self):
+        return self.label
+
+    def get_x_pts(self):
+        if len(self.path) > 0:
+            return list(map(lambda pt: pt[0], self.path))
+        else:
+            return None
+    
+    def get_y_pts(self):
+        if len(self.path) > 0:
+            return list(map(lambda pt: pt[1], self.path))
+        else:
+            return None
+    
+    def get_time_pts(self):
+        if len(self.path) > 0:
+            return list(map(lambda pt: pt[2], self.path))
+        else:
+            return None
         
+    def to_str(self):
+        if len(self.path) > 0:
+            for pt in self.path:
+                print(f"({pt[0]}, {pt[1]}, {pt[2]})")
+        else:
+            print("Empty")
+
 class XYZTimePath:
     def __init__(self):
         self.path = list()
@@ -257,6 +332,157 @@ class PerformanceMetrics:
 
     # Looking into how to implement this properly (https://arxiv.org/pdf/1910.04755.pdf)
 
+class Graphing2D:
+    def __init__(self, include_time = False):
+        self.paths = dict()
+        self.time_flag = include_time
+
+    def add_path(self, key, label_str):
+        if self.time_flag == False:
+            if key not in self.paths.keys():
+                self.paths[key] = XYPath()
+                self.paths[key].set_label(label_str)
+            else:
+                print(f"{key} is already in use.")
+        elif self.time_flag == True:
+            if key not in self.paths.keys():
+                self.paths[key] = XYTimePath()
+                self.paths[key].set_label(label_str)
+            else:
+                print(f"{key} is already in use.")
+
+    def add_path_point(self, path_name, x, y, time=None):
+        if time is None:
+            if path_name in self.paths.keys():
+                self.paths[path_name].add_point(x, y)
+            else:
+                print(f"{path_name} does not exist in path dictionary.")
+        else:
+            if path_name in self.paths.keys():
+                self.paths[path_name].add_point(x, y, time)
+
+    def save_plot(self, title, dir_name, timestamp = None):
+        from datetime import datetime
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path("ekg_auv_testing")
+        graphs_path = os.path.join(pkg_path, "graphs")
+        dir_path = os.path.join(graphs_path, dir_name)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        if timestamp is None:
+            timestamp = datetime.now().isoformat('_', timespec='seconds')
+        new_title = re.sub(r'\s+', '_', title)
+        plt.savefig(os.path.join(dir_path, f'{timestamp}_{new_title}.png'))
+
+    def show_plot(self, title_name, stamp = None):
+        print("Preparing graph visualization...")
+        paths_copy = self.paths.copy()
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        plt.title(f"{title_name} Visual")
+
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+
+        for path_name in paths_copy:
+            path = paths_copy[path_name]
+            x = path.get_x_pts()
+            y = path.get_y_pts()
+            #print(f"{path_name}\nX: {x}, \nY: {y}\nLabel: {path.get_label()}\n")
+            ax.plot(x, y, label=path.get_label())
+        
+        ax.set_autoscalex_on = True
+        ax.set_autoscaley_on = True
+
+        plt.legend()
+        #plt.show()
+        if stamp is None:
+            self.save_plot(title_name, "visual")
+        else:
+            self.save_plot(title_name, "visual", stamp)
+
+        try:
+            fig, axs = plt.subplots(2, 1)
+            fig.suptitle(f"{title_name} Performance")
+            
+            axs[0].set_ylabel('X')
+            axs[1].set_ylabel('Y')
+            axs[1].set_xlabel('Time')
+
+            for path_name in paths_copy:
+                path = paths_copy[path_name]
+                x = path.get_x_pts()
+                y = path.get_y_pts()
+                t = path.get_time_pts()
+                axs[0].plot(t, x, label=path.get_label())
+                axs[1].plot(t, y, label=path.get_label())
+
+            plt.legend()
+            #plt.show()
+            if stamp is None:
+                self.save_plot(title_name, "performance")
+            else:
+                self.save_plot(title_name, "performance", stamp)
+        except Exception as e:
+            print(f"Time data not given.\n{e}")
+
+    def get_log_path(self):        
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path("ekg_auv_testing")
+        logs_path = os.path.join(pkg_path, "logs")
+        return logs_path
+
+    def init_paths(self, labels):
+        from datetime import datetime
+        logs_path = self.get_log_path()
+        timestamp = datetime.now().isoformat('_', timespec='seconds')
+
+        for label in labels:
+            import re
+            new_label = re.sub(r'\s+', '_', label).lower()
+            label_path = os.path.join(logs_path, new_label)
+            if not os.path.exists(label_path):
+                os.makedirs(label_path)
+            file_name = f'{timestamp}_{new_label}.csv'
+            file_path = os.path.join(label_path, file_name)
+
+            with open(file_path, 'w', newline='') as cw:
+                writer = csv.writer(cw)
+                writer.writerow(["timestamp", "x", "y"])
+        return timestamp 
+
+    def graph_data_from_csv(self, labels, timestamp, title):
+        self.get_data_from_csv(labels, timestamp)
+        self.show_plot(title, timestamp)
+
+    def get_data_from_csv(self, labels, timestamp):
+        logs_path = self.get_log_path()
+        for label in labels:
+            path_name = re.sub(r'\s+', '_', label).lower()
+            path_path = os.path.join(logs_path, path_name)
+            file_name = f'{timestamp}_{path_name}.csv'
+            file_path = os.path.join(path_path, file_name)
+
+            self.add_path(path_name, label)
+            with open(file_path, 'r') as cr:
+                reader = csv.reader(cr)
+                for row in reader:
+                    try:
+                        self.add_path_point(path_name, round(float(row[1]), 2), round(float(row[2]), 2), float(row[0]))
+                    except:
+                        pass
+
+    def send_data_to_csv(self, label, timestamp, x, y, time):
+        logs_path = self.get_log_path()
+        path_name = re.sub(r'\s+', '_', label).lower()
+        file_name = f'{timestamp}_{path_name}.csv'
+        path_path = os.path.join(logs_path, path_name)
+        file_path = os.path.join(path_path, file_name)
+
+        with open(file_path, 'a', newline='') as cw:
+            writer = csv.writer(cw)
+            writer.writerow([time, x, y])
+
 class Graphing3D:
     def __init__(self, include_time = False):
         self.paths = dict()
@@ -288,6 +514,10 @@ class Graphing3D:
         else:
             if path_name in self.paths.keys():
                 self.paths[path_name].add_point(x, y, z, time)
+
+    #################
+    # Graphing Data #
+    #################
 
     def save_plot(self, title, dir_name, timestamp = None):
         from datetime import datetime
@@ -373,7 +603,7 @@ class Graphing3D:
             axs[i].set_title(order[i], loc='left')
 
         plt.suptitle(title, size= 15)
-        plt.figtext(0.95, 0.05, timestamp, horizontalalignment='right', size=10, weight='light')
+        # plt.figtext(0.95, 0.05, timestamp, horizontalalignment='right', size=10, weight='light')
         fig.tight_layout()
         self.save_plot(title, "metrics", timestamp)
         #plt.show()
@@ -401,9 +631,9 @@ class Graphing3D:
             file_name = f'{timestamp}_{new_label}.csv'
             file_path = os.path.join(label_path, file_name)
 
-            with open(file_path, 'w', newline='') as cw:
+            """with open(file_path, 'w', newline='') as cw:
                 writer = csv.writer(cw)
-                writer.writerow(["timestamp", "x", "y", "z"])
+                writer.writerow(["timestamp", "x", "y", "z"])"""
         return timestamp 
 
     def graph_data_from_csv(self, labels, timestamp, title):
@@ -434,6 +664,6 @@ class Graphing3D:
         path_path = os.path.join(logs_path, path_name)
         file_path = os.path.join(path_path, file_name)
 
-        with open(file_path, 'a', newline='') as cw:
+        """with open(file_path, 'a', newline='') as cw:
             writer = csv.writer(cw)
-            writer.writerow([time, x, y, z])
+            writer.writerow([time, x, y, z])"""
