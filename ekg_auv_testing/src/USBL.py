@@ -21,13 +21,6 @@ GAZEBO_MODEL_STATES_TOPIC = 'gazebo/model_states'
 
 SPEED_OF_SOUND = 1540                                     # speed of sound underwater
 
-# Channel Index
-CHANNELS_IDS = {
-    "1": "glider_1",
-    "168": "beacon_1",
-    "169": "beacon_2"
-}
-
 class Transceiver():
     def __init__(self, transponder_id, transceiver_id, model): 
         self.transponder_id = transponder_id
@@ -69,7 +62,6 @@ class Transceiver():
         rospy.Subscriber(MODE_TOPIC, String, self.__mode_cbk)
         rospy.Subscriber(TRANSPONDER_LOCATION_TOPIC, VehiclePose, self.__rx_loc_cbk)
         rospy.Subscriber(REQUEST_TOPIC, USBLRequestSim, self.__request_cbk)
-
 
     # Callback Functions
 
@@ -178,7 +170,6 @@ class Transceiver():
             individual_pub.publish(msg)
 
 
-
 class Transponder():
     def __init__(self, transponder_id, transceiver_id, model_name): 
         self.transponder_id = transponder_id
@@ -192,7 +183,7 @@ class Transponder():
         self.command_resp = USBLResponseSim()
 
         self.mu = 0
-        self.sigma = 2
+        self.sigma = 0
 
         # Topics
         COMMON_TOPIC = '/USBL/common_ping'

@@ -149,7 +149,7 @@ class Strats:
             tmp_pose.x = x/weight_num
             tmp_pose.y = y/weight_num
             tmp_pose.z = z/weight_num
-            #self.strat_pub.publish(tmp_pose)
+            self.strat_pub.publish(tmp_pose)
             return tmp_pose
         return None
 
@@ -174,7 +174,7 @@ class Strats:
             tmp_pose.x = self.pose_estimates[beacon_id].x
             tmp_pose.y = self.pose_estimates[beacon_id].y
             tmp_pose.z = self.pose_estimates[beacon_id].z
-            #self.strat_pub.publish(tmp_pose)
+            self.strat_pub.publish(tmp_pose)
 
             return self.pose_estimates[beacon_id]
         except Exception as e:
