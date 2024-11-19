@@ -1,0 +1,20 @@
+# Ignore all ROS packages
+/src/*
+
+# Except these 2 ROS packages
+!/src/ekg_auv_testing/
+!/src/seatrac_usbl/
+
+# Ignore ROS build
+build/
+devel/
+
+#Ignore pycache
+__pycache__/
+
+# Ignore log files and graphs
+/src/ekg_auv_testing/logs
+/src/ekg_auv_testing/graphs
+
+# Ignore Windows Zone.Identifier shenanigans
+*:Zone.Identifier

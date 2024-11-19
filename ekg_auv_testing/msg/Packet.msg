@@ -1,2 +1,0 @@
-string rosmsg_type
-string data

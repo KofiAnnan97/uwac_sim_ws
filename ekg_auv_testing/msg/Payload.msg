@@ -1,2 +1,0 @@
-string instruction
-string[] packets

@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-
-<launch>
-  <arg name="comm_port"/>
-
-  <node pkg="seatrac_pkg" name="gps_pose" type="GPSLocalizer.py" output="screen">
-    <!--param name="comm_port" type="string" value="$(arg comm_port)"/-->
-  </node>
-</launch>
