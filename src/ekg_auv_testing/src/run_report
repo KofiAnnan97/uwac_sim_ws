@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Save Performance of Data
+python3 CsvGraper.py -y perf
+
+# Save Visualization of Data
+python3 CsvGraper.py -y visual
+

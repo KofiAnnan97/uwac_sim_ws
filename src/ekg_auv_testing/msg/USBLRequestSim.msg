@@ -1,0 +1,4 @@
+int8 transceiverID
+int8 responseID
+string transponderModelName
+string data

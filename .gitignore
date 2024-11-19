@@ -9,8 +9,9 @@
 build/
 devel/
 
-#Ignore pycache
+# Ignore pycache
 __pycache__/
+*.pyc
 
 # Ignore log files and graphs
 /src/ekg_auv_testing/logs
@@ -18,3 +19,8 @@ __pycache__/
 
 # Ignore Windows Zone.Identifier shenanigans
 *:Zone.Identifier
+
+# Remove CsvGrapher can be found here: https://github.com/KofiAnnan97/simple_csv_grapher
+CsvGrapher.py
+perf.yaml
+visual.yaml

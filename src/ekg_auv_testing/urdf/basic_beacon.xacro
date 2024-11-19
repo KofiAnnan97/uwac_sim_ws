@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Import macro files-->
+    <xacro:include filename="$(find uuv_descriptions)/urdf/common.urdf.xacro" />
+    <xacro:include filename="$(find dave_snippets)/urdf/sensor_snippets.xacro"/>
+    <xacro:include filename="$(find uuv_gazebo_ros_plugins)/urdf/snippets.xacro"/>
+
+    <!-- Properties -->
+    <xacro:property name="mass" value="0.45"/> 
+    <xacro:property name="radius" value="0.05"/>
+    <xacro:property name="length" value="0.3"/>
+    <xacro:property name="namespace" default="basic_beacon"/>
+    <xacro:property name="transceiver_id" default="168"/>
+    <xacro:property name="transponder_id" default="1"/>
+
+    <!-- Robot Definition -->
+    <xacro:macro name="basic_beacon" params="namespace debug transceiver_id transponder_id inertial_reference_frame">
+        <link name="${namespace}/base_link">
+            <visual name="visual">
+                <!--origin xyz="0 5 0" rpy="0 0 0"/-->
+                <geometry>
+                    <cylinder radius="${radius}" length="${length}"/>
+                </geometry>
+                <material name="orange">
+                    <color rgba="${255/255} ${108/255} ${10/255} 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <!--origin xyz="0 5 0" rpy="0 0 0"/-->
+                <geometry>
+                    <cylinder radius="${radius}" length="${length}"/>
+                </geometry>
+            </collision>
+            <!--inertial>
+                <mass value="${mass}"/>
+                <origin xyz="0 1 0" rpy="0 0 0"/>
+                <inertia
+                    ixx="0.12" ixy="0.0" ixz="0.0"
+                    iyy="0.12" iyz="0.0"
+                    izz="0.106"/>
+            </inertial-->
+        </link>
+
+        <!--gazebo reference="link">                           
+            <material>Gazebo/Orange</material>
+        </gazebo-->
+        
+        <gazebo>
+            <!-- Set up USBL Plugin for TX and RX -->
+            <!--plugin name="${namespace}_tx" filename="libtransceiverPlugin.so">
+                <namespace>USBL</namespace>
+                <transponder_device>transponder_manufacturer</transponder_device>
+                <transponder_ID>${transponder_id}</transponder_ID>
+                <transceiver_device>transceiver_manufacturer</transceiver_device>
+                <transceiver_ID>${transceiver_id}</transceiver_ID>
+                <enable_ping_scheduler>false</enable_ping_scheduler>
+                <transponder_attached_object>${namespace}</transponder_attached_object>
+                <interrogation_mode>common</interrogation_mode>
+                <sound_speed>1540.0</sound_speed>
+                <ping_freq>2</ping_freq>
+            </plugin-->
+            <!--plugin name="${namespace}_control" filename="libgazebo_spatial_move.so">
+                <robotNamespace>${namespace}</robotNamespace>
+                <commandTopic>cmd_vel</commandTopic>
+                <odometryTopic>${namespace}/pose_gt</odometryTopic>
+                <odometryFrame>odom</odometryFrame>
+                <robotBaseFrame>base_footprint</robotBaseFrame>
+                <odometryRate>20.0</odometryRate>
+            </plugin-->
+        </gazebo>
+        
+        <!-- Pressure Sensor -->
+        <xacro:pressure_plugin_macro
+            namespace="${namespace}"
+            suffix=""
+            parent_link="${namespace}/base_link"
+            topic="pressure"
+            mass="0.015"
+            update_rate="10"
+            range="1362"
+            noise_sigma="3.0"
+            noise_amplitude="0.0"
+            estimateDepth="true"
+            standardPressure="101.325"
+            kPaPerM="9.80638">
+            <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+            <origin xyz="0.0 0.0 0.0" rpy="0 ${0.355556*pi} 0" />
+        </xacro:pressure_plugin_macro>
+
+        <!-- IMU Sensor -->
+        <xacro:include filename="$(find glider_hybrid_whoi_description)/urdf/uw_hector_imu_plugin.xacro"/>
+
+        <!-- GPS Sensor -->
+        <!--xacro:include filename="$(find glider_hybrid_whoi_description)/urdf/uw_hector_gps_plugin.xacro"/-->
+ 
+    </xacro:macro>
+
+</robot>

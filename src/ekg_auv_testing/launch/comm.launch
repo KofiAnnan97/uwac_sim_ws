@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="namespace" default="robot"/>
+  <arg name="beacon_type" default="X110"/>
+  <arg name="comm_id" default="0"/>
+  <arg name="tx_id" default="0"/>
+  <arg name="rx_id" default="0"/>
+
+  <node pkg="ekg_auv_testing" name="$(arg namespace)_$(arg beacon_type)" type="USBLTesting.py" output="screen">
+    <param name="beacon_type" type="string" value="$(arg beacon_type)"/>
+    <param name="model_name" type="string" value="$(arg namespace)"/>
+    <param name="comm_id" type="string" value="$(arg comm_id)"/>
+    <param name="tx_id" type="string" value="$(arg tx_id)"/>
+    <param name="rx_id" type="string" value="$(arg rx_id)"/>
+  </node>
+
+</launch>

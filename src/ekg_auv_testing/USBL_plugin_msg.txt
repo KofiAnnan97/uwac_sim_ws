@@ -1,0 +1,34 @@
+########################
+# USBL PLUGIN MESSAGES #
+########################
+
+/USBL/common_interrogation_ping
+    string data
+/USBL/tranceiver_manufacturer_168/channel_switch
+    string data
+/USBL/tranceiver_manufacturer_168/command_response
+    int32 transceverID
+    int32 responseID
+    string data
+/USBL/tranceiver_manufacturer_168/command_response_test
+    string data
+/USBL/tranceiver_manufacturer_168/interrogation_mode
+    string data
+/USBL/tranceiver_manufacturer_168/temperature
+    float64 data
+/USBL/tranceiver_manufacturer_168/transponder_location
+    float64 x
+    float64 y
+    float64 z
+/USBL/tranceiver_manufacturer_168/transponder_location_cartesion
+    float64 x
+    float64 y
+    float64 z
+/USBL/transponder_manufacturer_1/command_request
+    int32 transponderID
+    int32 commandID
+    string data
+/USBL/transponder_manufacturer_1/individual_interrogation_ping
+    string data
+/USBL/transponder_manufacturer_1/temperature
+    float64 data
