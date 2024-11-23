@@ -122,8 +122,8 @@ class WaypointFollower():
             if self.t_pose_stamp != t_stamp: 
                 self.grapher.send_data_to_csv(AUV_TRUE_POSE_1, self.log_stamp, t_pos.x, t_pos.y, t_pos.z, self.true_pose.header.stamp.secs)
                 self.t_pose_stamp = t_stamp
-            # self.grapher.add_path_point(AUV_TRUE_POSE_1, t_pos.x, t_pos.y, t_pos.z, self.true_pose.header.stamp.secs)
-            # rospy.loginfo(f"True Pose: ({t_pos.x}, {t_pos.y}, {t_pos.z})")
+                # self.grapher.add_path_point(AUV_TRUE_POSE_1, t_pos.x, t_pos.y, t_pos.z, self.true_pose.header.stamp.secs)
+                #rospy.loginfo(f"True Pose: {t_stamp},{t_pos.x},{t_pos.y},{t_pos.z})")
     
     def __status_cbk(self, data):
         self.uwg_status = data
@@ -558,7 +558,7 @@ class WaypointFollower():
         last_pose = self.init_pose
         #last_pose.pose = self.init_pose.pose
         last_time = -1
-        if curr_time.secs - start_time.secs < 121:
+        if curr_time.secs - start_time.secs < 81:
             self.query_beacons()
             
             #avg = self.localizer.get_simple_average() #self.beacon_estimates)

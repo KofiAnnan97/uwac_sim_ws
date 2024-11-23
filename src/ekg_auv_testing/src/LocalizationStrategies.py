@@ -14,13 +14,9 @@ from seatrac_pkg.msg import bcn_frame_array, bcn_pose, bcn_pose_array, bcn_statu
 from Logger import GliderLogger
 
 class Strats:
-    #def __init__(self, glider_name, stamp, glider_topic):
     def __init__(self):
         self.start_time = 0
         self.prev_start_time = -1
-        #self.g_logger = GliderLogger(glider_name, stamp, glider_topic)
-        #self.g_logger.set_glider_log(glider_name, stamp)
-
         self.rate = rospy.Rate(10)
         
         self.pose_estimates = dict()
@@ -206,14 +202,9 @@ class Strats:
         final_pose.pitch = starting_pose.pitch
         final_pose.yaw = starting_pose.yaw
 
-        """final_pose.pose.orientation.x = starting_pose.pose.orientation.x
-        final_pose.pose.orientation.y = starting_pose.pose.orientation.y
-        final_pose.pose.orientation.z = starting_pose.pose.orientation.z
-        final_pose.pose.orientation.w = starting_pose.pose.orientation.w""" 
-
         prev_depth = 0
         prev_time = 0
-        aoa_deg = -3 #-2.7
+        aoa_deg = -24 #-27 #-2.7
 
         for val in data:
             rpy = val[10:]
@@ -240,10 +231,10 @@ class Strats:
             d_x = v_x * dt
             d_y = v_y * dt
             final_pose.stamp.secs = int(val[0])
-            final_pose.x += d_x
-            final_pose.y += d_y
+            final_pose.x -= d_x
+            final_pose.y -= d_y
         if(len(data) > 0):
-            final_pose.z = -1*depth
+            final_pose.z = depth
         return final_pose
     
     def run(self):
