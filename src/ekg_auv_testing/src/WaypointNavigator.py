@@ -34,10 +34,10 @@ AUV_FUSION_POSE_2 = "weighted_avg_with_dead_reckoning"
 AUV_FUSION_POSE_3 = "closest_neighbor_with_dead_reckoning"
 
 # Localization Strategies
-labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_1, AUV_BEACON_POSE_2, AUV_BEACON_POSE_3]
+#labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_1, AUV_BEACON_POSE_2, AUV_BEACON_POSE_3]
 
 # Weighted Average with Dead Reckoning (delay correction)
-#labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_2, AUV_FUSION_POSE_2]
+labels = [AUV_TRUE_POSE_1, AUV_EST_POSE_1, AUV_BEACON_POSE_2, AUV_FUSION_POSE_2]
 
 YAW_UPPER_LIMIT = 2.62    # [radians]
 YAW_LOWER_LIMIT = 0.52    # [radians]
@@ -561,29 +561,28 @@ class WaypointFollower():
         if curr_time.secs - start_time.secs < 121:
             self.query_beacons()
             
-            avg = self.localizer.get_simple_average() #self.beacon_estimates)
+            #avg = self.localizer.get_simple_average() #self.beacon_estimates)
             wavg = self.localizer.get_weighted_average(10) #, self.beacon_estimates)
-            cn = self.localizer.get_closest_neighbor() #self.beacon_estimates, self.neighbors)
+            #cn = self.localizer.get_closest_neighbor() #self.beacon_estimates, self.neighbors)
             #print(avg)
             #print(wavg)
             #print(cn)
 
-
-            """if wavg is not None:
-                if last_time != wavg.header.stamp.secs:
+            if wavg is not None:
+                if last_time != wavg.stamp:
                     last_pose = wavg
-                    last_time = wavg.header.stamp.secs
-            f_pose =  self.localizer.get_weighted_average_deadreckoning(last_pose)
+                    last_time = wavg.stamp
+            f_pose =  self.localizer.get_weighted_average_deadreckoning(last_pose, self.logger)
             last_pose = f_pose
 
             if f_pose is not None:
-                self.grapher.send_data_to_csv(AUV_FUSION_POSE_2, self.log_stamp, f_pose.pose.position.x, f_pose.pose.position.y, f_pose.pose.position.z, curr_time.secs)""" #f_pose.header.stamp.secs)
-            if avg is not None:
-                self.grapher.send_data_to_csv(AUV_BEACON_POSE_1, self.log_stamp, avg.x, avg.y, avg.z, curr_time.secs)
+                self.grapher.send_data_to_csv(AUV_FUSION_POSE_2, self.log_stamp, f_pose.x, f_pose.y, f_pose.z, curr_time.secs) #f_pose.header.stamp.secs)
+            #if avg is not None:
+            #    self.grapher.send_data_to_csv(AUV_BEACON_POSE_1, self.log_stamp, avg.x, avg.y, avg.z, curr_time.secs)
             if wavg is not None:
                 self.grapher.send_data_to_csv(AUV_BEACON_POSE_2, self.log_stamp, wavg.x, wavg.y, wavg.z, curr_time.secs)
-            if cn is not None:
-                self.grapher.send_data_to_csv(AUV_BEACON_POSE_3, self.log_stamp, cn.x, cn.y, cn.z, curr_time.secs)
+            #if cn is not None:
+            #    self.grapher.send_data_to_csv(AUV_BEACON_POSE_3, self.log_stamp, cn.x, cn.y, cn.z, curr_time.secs)
             self.circle()
             time.sleep(2)
         else:

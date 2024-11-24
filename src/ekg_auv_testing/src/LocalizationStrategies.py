@@ -171,10 +171,10 @@ class Strats:
             #print(f"Get Closest Neighbor: {e}")
             return None
 
-    """def get_weighted_average_deadreckoning(self, wavg_pose):
+    def get_weighted_average_deadreckoning(self, wavg_pose, g_logger):
         if wavg_pose is not None:
             try:
-                start_time = wavg_pose.header.stamp.secs
+                start_time = wavg_pose.stamp.secs
                 if start_time == self.prev_start_time:
                     start_time = self.start_time
                 elif start_time == 0:
@@ -182,7 +182,7 @@ class Strats:
                 start_time += 1
                 end_time = rospy.Time.now().secs
 
-                data = self.g_logger.retrieve_data_by_time(start_time, end_time)
+                data = g_logger.retrieve_data_by_time(start_time, end_time)
                 fuse_pose = self.get_new_pose_from_logs(data, wavg_pose)
 
                 #print(f"\nTime span: {start_time} to {end_time}")
@@ -194,24 +194,26 @@ class Strats:
                 self.start_time = end_time
                 return fuse_pose
             except Exception as e:
-                print(f"Error in wadr func.\n{e}")
-                #pass     
+                print(f"Error in wadr func.\n{e}")     
         return None
 
     def get_new_pose_from_logs(self, data, starting_pose):
         final_pose = VehiclePose()
-        final_pose.pose.position.x = starting_pose.pose.position.x
-        final_pose.pose.position.y = starting_pose.pose.position.y
-        final_pose.pose.position.z = starting_pose.pose.position.z
+        final_pose.x = starting_pose.x
+        final_pose.y = starting_pose.y
+        final_pose.z = starting_pose.z
+        final_pose.roll = starting_pose.roll
+        final_pose.pitch = starting_pose.pitch
+        final_pose.yaw = starting_pose.yaw
 
-        final_pose.pose.orientation.x = starting_pose.pose.orientation.x
+        """final_pose.pose.orientation.x = starting_pose.pose.orientation.x
         final_pose.pose.orientation.y = starting_pose.pose.orientation.y
         final_pose.pose.orientation.z = starting_pose.pose.orientation.z
-        final_pose.pose.orientation.w = starting_pose.pose.orientation.w 
+        final_pose.pose.orientation.w = starting_pose.pose.orientation.w""" 
 
         prev_depth = 0
         prev_time = 0
-        aoa_deg = -30 #-2.7
+        aoa_deg = -3 #-2.7
 
         for val in data:
             rpy = val[10:]
@@ -237,12 +239,12 @@ class Strats:
                 v_y = dz/(dt*math.tan(glide_angle))*math.cos(math.pi/2.0-float(rpy[2]))
             d_x = v_x * dt
             d_y = v_y * dt
-            final_pose.header.stamp.secs = int(val[0])
-            final_pose.pose.position.x += d_x
-            final_pose.pose.position.y += d_y
+            final_pose.stamp.secs = int(val[0])
+            final_pose.x += d_x
+            final_pose.y += d_y
         if(len(data) > 0):
-            final_pose.pose.position.z = depth #data[-1:][3]
-        return final_pose"""
+            final_pose.z = -1*depth
+        return final_pose
     
     def run(self):
         while not rospy.is_shutdown():
