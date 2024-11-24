@@ -4,8 +4,8 @@ import argparse
 from Visualizer import PerformanceMetrics, Graphing3D
 
 #labels = ["true_pose", "avg", "weighted_avg", "closest_neighbor"]
-labels = ["true_pose", "dead_reckoning", "avg", "weighted_avg", "closest_neighbor"]
-#labels = ["true_pose", "dead_reckoning", "weighted_avg", "weighted_avg_with_dead_reckoning"]
+#labels = ["true_pose", "dead_reckoning", "avg", "weighted_avg", "closest_neighbor"]
+labels = ["true_pose", "dead_reckoning", "weighted_avg", "weighted_avg_with_dead_reckoning"]
 #labels = ["true_pose","wavg_15","wavg_10","wavg_5","wavg_30"]
 
 ls = "Localization Strats"

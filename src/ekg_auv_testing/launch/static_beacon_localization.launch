@@ -100,7 +100,7 @@
     <arg name="z" value="-0.2"/>
   </include>
 
-  <include file="$(find ekg_auv_testing)/launch/uploads/beacon_config.launch">
+  <!--include file="$(find ekg_auv_testing)/launch/uploads/beacon_config.launch">
     <arg name="robot_name" value="BEACON_ID4"/>
     <arg name="beacon_type" value="X150"/>
     <arg name="rx_id" default="1"/>
@@ -158,7 +158,7 @@
     <arg name="x" value="40"/>
     <arg name="y" value="-20"/>
     <arg name="z" value="-0.2"/>
-  </include>
+  </include-->
 
   <!--include file="$(find ekg_auv_testing)/launch/uploads/beacon_config.launch">
     <arg name="robot_name" value="beacon_10"/>

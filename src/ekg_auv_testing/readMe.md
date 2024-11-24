@@ -1,20 +1,3 @@
-# Pre-requirements
-1. [ROS Noetic](http://wiki.ros.org/noetic/Installation/Ubuntu)
-2. [Dave](https://field-robotics-lab.github.io/dave.doc/contents/installation/Clone-Dave-Repositories/)
-3. Gazebo 11
-4. [glider_hybrid_whoi](https://github.com/Field-Robotics-Lab/glider_hybrid_whoi)
-5. [FRL Msgs](https://github.com/Field-Robotics-Lab/frl_msgs)
-5. Nps_uw_sensors_gazebo
-6. seatrac_usbl (Githuib repo from naslab-projects)
-
-# Python libraries
-1. rospy_message_converter
-
-Add this package to the ~/uuv_ws/src 
-use catkin_make
-
-
-
 # Useful Scripts
 1. Graphing3D.py
 2. Logger.py
