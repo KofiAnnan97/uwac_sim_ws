@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>uwac_sim</name>
+  <version>1.0.0</version>
+  <description>Multi beacon localization simulation package</description>
+  <maintainer email="egbordzo@purdue.edu">Elinam Gbordzoe</maintainer>
+  <license>Apache2</license>
+  <author email="egbordzo@purdue.edu">dtd</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>geometry_msgs</build_export_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <depend>caldus_description</depend>
+  <depend>caracara_description</depend>
+  <depend>smilodon_description</depend>
+  <depend>teledyne_whn_dsl_description</depend>
+  <depend>teledyne_whn_uuvsim_description</depend>
+  <depend>teledyne_explorer4000_dsl_description</depend>
+  <depend>teledyne_explorer4000_uuvsim_description</depend>
+  <depend>nortek_dvl1000_4000_dsl_description</depend>
+  <depend>nortek_dvl1000_4000_uuvsim_description</depend>
+  <depend>uuv_assistants</depend>
+  <depend>uuv_descriptions</depend>
+  <depend>uuv_gazebo_plugins</depend>
+  <depend>uuv_gazebo_ros_plugins</depend>
+  <depend>ds_sim</depend>
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+</package>

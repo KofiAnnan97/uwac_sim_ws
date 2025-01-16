@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="namespace" default="robot"/>
+  <arg name="beacon_type" default="X110"/>
+  <arg name="comm_id" default="-1"/>
+  <arg name="tx_id" default="168"/>
+  <arg name="rx_id" default="1"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find uwac_sim)/worlds/usbl_test.world"/>
+    <arg name="extra_gazebo_args" value=""/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  # Example transceiver
+  <include file="$(find uwac_sim)/launch/comm.launch">
+    <arg name="namespace" value="box1"/>
+    <arg name="beacon_type" value="X150"/>
+    <arg name="comm_id" value="168"/>
+    <arg name="rx_id" value="1"/>
+  </include>
+
+  # Example transponder
+  <include file="$(find uwac_sim)/launch/comm.launch">
+    <arg name="namespace" value="sphere1"/>
+    <arg name="beacon_type" value="X110"/>
+    <arg name="comm_id" value="1"/>
+    <arg name="tx_id" value="168"/>
+  </include>
+
+
+  # TEST THE FOLLOWING
+  # - Pinging individual transponder or multipler (in comman channel)
+  # - Send command response for location
+
+</launch>

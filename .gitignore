@@ -1,9 +1,10 @@
 # Ignore all ROS packages
 /src/*
+.catkin_workspace
+/src/uwac_sim/gazebo_spatial_move_plugin
 
-# Except these 2 ROS packages
-!/src/ekg_auv_testing/
-!/src/seatrac_usbl/
+# Except these ROS packages
+!/src/uwac_sim/
 
 # Ignore ROS build
 build/
@@ -14,13 +15,15 @@ __pycache__/
 *.pyc
 
 # Ignore log files and graphs
-/src/ekg_auv_testing/logs
-/src/ekg_auv_testing/graphs
+/src/uwac_sim/logs
+/src/uwac_sim/log
+/src/uwac_sim/graphs
 
 # Ignore Windows Zone.Identifier shenanigans
 *:Zone.Identifier
 
-# Remove CsvGrapher can be found here: https://github.com/KofiAnnan97/simple_csv_grapher
+# CsvGrapher can be found here: https://github.com/KofiAnnan97/simple_csv_grapher
 CsvGrapher.py
 perf.yaml
 visual.yaml
+run_report

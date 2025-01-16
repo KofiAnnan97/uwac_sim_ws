@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="debug" default="false"/>
+   <arg name="set_timeout" default="false"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find uwac_sim)/worlds/water_sim.world"/>
+    <arg name="extra_gazebo_args" value=""/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  <include file="$(find uuv_assistants)/launch/publish_world_ned_frame.launch"/>
+
+  <node name="publish_world_models" pkg="uuv_assistants" type="publish_world_models.py" output="screen">
+    <rosparam subst_value="true">
+      meshes:
+        heightmap:
+          mesh: package://uuv_gazebo_worlds/models/sand_heightmap/meshes/heightmap.dae
+          model: sand_heightmap
+        seafloor:
+          plane: [2000, 2000, 0.1]
+          pose:
+            position: [0, 0 -100]
+        north:
+          plane: [0.1, 2000, 100]
+          pose:
+            position: [1000, 0, -50]
+        south:
+          plane: [0.1, 2000, 100]
+          pose:
+            position: [-1000, 0, -50]
+        west:
+          plane: [2000, 0.1, 100]
+          pose:
+            position: [0, -1000, -50]
+        east:
+          plane: [2000, 0.1, 100]
+          pose:
+            position: [0, 1000, -50]
+    </rosparam>
+  </node>
+
+  <group if="$(arg set_timeout)">
+    <include file="$(find uuv_assistants)/launch/set_simulation_time.launch">
+      <arg name="timeout" value="$(arg timeout)"/>
+    </include>
+  </group>
+
+  <arg name="use_ned_frame" default="false"/>
+
+  <!-- Glider 1 -->
+  <include file="$(find uwac_sim)/launch/uploads/vehicle_kinematics.launch">
+    <arg name="robot_name" value="glider_1"/> 
+    <arg name="beacon_type" value="X110"/>
+    <arg name="tx_id" value="141"/>
+    <arg name="transponder_id" value="1"/>
+    <arg name="x" value="-10"/>
+    <arg name="y" value="0"/>
+    <arg name="z" value="-18.5"/>
+    <arg name="roll" value="0"/>
+    <arg name="pitch" value="0"/>
+    <arg name="yaw" value="0"/>
+  </include>
+
+  <!-- Beacons -->
+  <include file="$(find uwac_sim)/launch/uploads/beacon_config.launch">
+    <arg name="robot_name" value="beacon_1"/>
+    <arg name="beacon_type" value="X150"/>
+    <arg name="transceiver_id" value="141"/>
+    <arg name="rx_id" value="1"/>
+    <arg name="x" value="0"/>
+    <arg name="y" value="0"/>
+    <arg name="z" value="-0.2"/>
+  </include>
+
+  <include file="$(find uwac_sim)/launch/uploads/beacon_config.launch">
+    <arg name="robot_name" value="beacon_2"/>
+    <arg name="beacon_type" value="X150"/>
+    <arg name="transceiver_id" value="142"/>
+    <arg name="rx_id" value="1"/>
+    <arg name="x" value="0"/>
+    <arg name="y" value="20"/>
+    <arg name="z" value="-0.2"/>
+  </include>
+
+  <!--include file="$(find uwac_sim)/launch/uploads/beacon_config.launch">
+    <arg name="robot_name" value="beacon_3"/>
+    <arg name="bid" value="3"/>
+    <arg name="transceiver_id" value="143"/>
+    <arg name="x" value="60"/>
+    <arg name="y" value="0"/>
+    <arg name="z" value="-0.2"/>
+  </include-->
+</launch>

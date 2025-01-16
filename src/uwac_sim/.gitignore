@@ -1,0 +1,12 @@
+# vs code
+.vscode
+
+#Plugins
+build/
+
+# Python
+__pycache__/*
+
+# Data and Visualization
+graphs/*
+log/*
